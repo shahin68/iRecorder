@@ -1,9 +1,10 @@
 plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
-    id 'kotlin-parcelize'
-    id 'androidx.navigation.safeargs.kotlin'
+    id('com.android.application')
+    id('kotlin-android')
+    id('kotlin-kapt')
+    id('kotlin-parcelize')
+    id('dagger.hilt.android.plugin')
+    id('androidx.navigation.safeargs.kotlin')
 }
 
 static def getDate() {
@@ -60,7 +61,7 @@ android {
 final COROUTINES = '1.4.3'
 final NAVIGATION = '2.3.5'
 final LIFECYCLE = '2.3.1'
-final HILT = '2.35'
+final HILT = '2.38.1'
 final PAGING = '3.0.1'
 final ROOM = '2.3.0'
 
@@ -88,6 +89,7 @@ dependencies {
 
     // Jetpack Hilt dependency injection
     implementation("com.google.dagger:hilt-android:$HILT")
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     kapt("com.google.dagger:hilt-android-compiler:$HILT")
 
     // Jetpack paging llibrary
