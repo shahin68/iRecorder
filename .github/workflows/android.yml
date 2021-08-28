@@ -8,7 +8,24 @@ on:
 
 jobs:
 
+  lint:
+    name: Run List Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Run lint checks
+        run: ./gradlew lintDebug
+
+      - name: Upload lint report
+        uses: actions/upload-artifact@v2
+        with:
+          name: lint_checks_report
+          path: app/build/reports/
+          
   unit-test:
+    needs: [lint]
     name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
