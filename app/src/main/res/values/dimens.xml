@@ -10,4 +10,7 @@
     <dimen name="radius_normal">6dp</dimen>
 
     <dimen name="button_height_normal">68dp</dimen>
+
+    <dimen name="generic_size_home_mic_btn">120dp</dimen>
+    <dimen name="generic_ripple_radius_home_mic_btn">60dp</dimen>
 </resources>
