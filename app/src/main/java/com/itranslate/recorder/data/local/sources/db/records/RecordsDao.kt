@@ -38,13 +38,34 @@ interface RecordsDao {
      * Query to delete [Record]s with record_id the same as [recordId]
      */
     @Query("DELETE FROM records WHERE record_id LIKE :recordId")
-    suspend fun deleteRecordsById(recordId: Int)
+    suspend fun deleteRecordsByRecordId(recordId: Int)
 
     /**
      * Query to clear records table
      */
     @Query("DELETE FROM records")
     suspend fun clearAllRecords()
+
+    /**
+     * Get list of records
+     * @return list of [Record]s
+     */
+    @Query("SELECT * FROM records")
+    fun getRecordsList(): List<Record>
+
+    /**
+     * Find records with given [recordId]
+     * @return list of [Record]s
+     */
+    @Query("SELECT * FROM records WHERE record_id LIKE :recordId")
+    fun findRecordsByRecordId(recordId: Int): List<Record>
+
+    /**
+     * Find records with given [recordName]
+     * @return list of [Record]s
+     */
+    @Query("SELECT * FROM records WHERE record_name LIKE :recordName")
+    fun findRecordsByExactRecordName(recordName: String): List<Record>
 
     /**
      * Used paging 3 [DataSource.Factory] as return type to implement paginated flow of [Record]s
