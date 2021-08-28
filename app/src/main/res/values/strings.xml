@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">iRecorder</string>
+    <string name="home_btn_text_show_recordings">Show Recordings</string>
 </resources>
