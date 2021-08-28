@@ -57,3 +57,12 @@ fun <T: View> T.visibleOrHide(show: Boolean) {
     }
 }
 
+/**
+ * extension function to register click listener on a view
+ */
+fun <T: View> T.onClick(block: (View) -> Unit) {
+    return setOnClickListener {
+        block.invoke(this)
+    }
+}
+
