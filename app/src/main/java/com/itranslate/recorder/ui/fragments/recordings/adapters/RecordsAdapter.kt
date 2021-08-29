@@ -18,6 +18,21 @@ class RecordsAdapter(
     ) -> Unit
 ) : PagingDataAdapter<Record, RecordViewHolder>(DiffCallback) {
 
+    object DiffCallback : DiffUtil.ItemCallback<Record>() {
+        override fun areItemsTheSame(oldItem: Record, newItem: Record): Boolean {
+            return newItem == oldItem
+        }
+
+        override fun areContentsTheSame(oldItem: Record, newItem: Record): Boolean {
+            return newItem.recordName.equals(oldItem.recordName, ignoreCase = false)
+        }
+    }
+
+    /**
+     * function calculating last item position
+     */
+    private fun lastItemPosition() = itemCount - 1
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordViewHolder {
         return RecordViewHolder(
             ItemRecordingBinding.inflate(LayoutInflater.from(parent.context), parent, false),
@@ -29,16 +44,7 @@ class RecordsAdapter(
         val item = getItem(position)
         if (item != null) {
             holder.bind(item)
-        }
-    }
-
-    object DiffCallback : DiffUtil.ItemCallback<Record>() {
-        override fun areItemsTheSame(oldItem: Record, newItem: Record): Boolean {
-            return newItem == oldItem
-        }
-
-        override fun areContentsTheSame(oldItem: Record, newItem: Record): Boolean {
-            return newItem.recordName.equals(oldItem.recordName, ignoreCase = false)
+            holder.setDividerVisibility(position != lastItemPosition())
         }
     }
 }

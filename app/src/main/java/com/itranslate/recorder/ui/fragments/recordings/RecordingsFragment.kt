@@ -5,11 +5,9 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
-import androidx.recyclerview.widget.DividerItemDecoration
 import com.itranslate.recorder.R
 import com.itranslate.recorder.databinding.FragmentRecordingsBinding
 import com.itranslate.recorder.general.extensions.addEnterExitSharedAxisTransition
-import com.itranslate.recorder.general.extensions.getDrawable
 import com.itranslate.recorder.general.extensions.visibleOrGone
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordingLoadStateAdapter
@@ -43,11 +41,6 @@ class RecordingsFragment :
     }
 
     private fun setupRecordingsList() {
-        binding.rvRecordingsList.addItemDecoration(
-            DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL).apply {
-                getDrawable(R.drawable.divider_horizontal)?.let { setDrawable(it) }
-            }
-        )
         binding.recordingsAdapter = recordsAdapter.apply {
             withLoadStateFooter(footer = RecordingLoadStateAdapter())
         }
