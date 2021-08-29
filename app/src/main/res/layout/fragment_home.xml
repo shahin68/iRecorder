@@ -35,7 +35,7 @@
             android:layout_marginTop="@dimen/spacing_normal"
             android:layout_marginBottom="@dimen/spacing_normal"
             android:paddingHorizontal="@dimen/spacing_large"
-            android:text="@string/home_btn_text_show_recordings"
+            android:text="@string/text_btn_home_show_recordings"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
