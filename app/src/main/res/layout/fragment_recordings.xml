@@ -7,6 +7,10 @@
     <data>
 
         <variable
+            name="combinedLoadStates"
+            type="androidx.paging.CombinedLoadStates" />
+
+        <variable
             name="recordingsAdapter"
             type="com.itranslate.recorder.ui.fragments.recordings.adapters.RecordsAdapter" />
     </data>
@@ -44,9 +48,10 @@
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progressbar_recordings_loading"
+            style="@style/CircularProgressIndicatorStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminate="true"
+            app:circularProgressIndicator_setShowOrHide="@{combinedLoadStates}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

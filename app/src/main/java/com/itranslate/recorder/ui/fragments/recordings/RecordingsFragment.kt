@@ -45,27 +45,18 @@ class RecordingsFragment :
         }
         recordsAdapter.addLoadStateListener { combinedState ->
             if (isAdded) {
+                binding.combinedLoadStates = combinedState
                 when (val state = combinedState.append) {
                     is LoadState.NotLoading -> {
-                        onLoading(show = false)
                         showEmptyView(
                             show = recordsAdapter.itemCount < 1,
                             getString(R.string.error_message_no_recording)
                         )
                     }
-                    is LoadState.Loading -> {
-                        onLoading(show = !state.endOfPaginationReached)
-                    }
                     is LoadState.Error -> {
-                        onLoading(show = false)
                         showEmptyView(
                             show = true, state.error.localizedMessage
                         )
-                    }
-                }
-                when (val state = combinedState.refresh) {
-                    is LoadState.Loading -> {
-                        onLoading(show = !state.endOfPaginationReached)
                     }
                 }
             }
@@ -82,18 +73,6 @@ class RecordingsFragment :
             if (isAdded && isVisible) {
                 binding.tvError.text = errorMessage
             }
-        }
-    }
-
-    /**
-     * Method to show or hide loading view
-     */
-    private fun onLoading(show: Boolean) = when {
-        show -> {
-            binding.progressbarRecordingsLoading.show()
-        }
-        else -> {
-            binding.progressbarRecordingsLoading.hide()
         }
     }
 

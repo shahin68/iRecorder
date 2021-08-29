@@ -11,4 +11,19 @@
     </style>
     <!--endregion-->
 
+    <!--region Circular Progress Indicator Style-->
+    <style name="CircularProgressIndicatorStyle" parent="Widget.MaterialComponents.CircularProgressIndicator">
+        <item name="android:indeterminate">true</item>
+        <item name="hideAnimationBehavior">inward</item>
+        <item name="showAnimationBehavior">outward</item>
+    </style>
+    <!--endregion-->
+
+    <!--region Circular Progress Indicator Style-->
+    <style name="LinearProgressIndicatorStyle" parent="Widget.MaterialComponents.LinearProgressIndicator">
+        <item name="android:indeterminate">true</item>
+        <item name="hideAnimationBehavior">inward</item>
+        <item name="showAnimationBehavior">outward</item>
+    </style>
+    <!--endregion-->
 </resources>

@@ -2,6 +2,8 @@ package com.itranslate.recorder.general.extensions
 
 import android.view.View
 import androidx.core.view.isVisible
+import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.progressindicator.LinearProgressIndicator
 
 /**
  * extension function to set view visibility as VISIBLE
@@ -65,4 +67,31 @@ fun <T: View> T.onClick(block: (View) -> Unit) {
         block.invoke(this)
     }
 }
+
+/**
+ * Extension function to show or hide [CircularProgressIndicator]
+ * show() & hide() belong the the view where they trigger show & hide animation behaviors
+ */
+fun CircularProgressIndicator.showOrHide(show: Boolean) = when {
+    show -> {
+        show()
+    }
+    else -> {
+        hide()
+    }
+}
+
+/**
+ * Extension function to show or hide [LinearProgressIndicator]
+ * show() & hide() belong the the view where they trigger show & hide animation behaviors
+ */
+fun LinearProgressIndicator.showOrHide(show: Boolean) = when {
+    show -> {
+        show()
+    }
+    else -> {
+        hide()
+    }
+}
+
 
