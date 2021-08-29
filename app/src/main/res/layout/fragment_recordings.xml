@@ -6,7 +6,9 @@
 
     <data>
 
-
+        <variable
+            name="recordingsAdapter"
+            type="com.itranslate.recorder.ui.fragments.recordings.adapters.RecordsAdapter" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -15,9 +17,10 @@
         android:background="?attr/colorOnPrimary">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_recordings"
+            android:id="@+id/rv_recordings_list"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:adapter="@{recordingsAdapter}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -25,5 +28,36 @@
             tools:itemCount="5"
             tools:listitem="@layout/item_recording" />
 
+        <TextView
+            android:id="@+id/tv_error"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/spacing_large"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/guideline_horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/guideline_horizontal"
+            tools:text="No Data"
+            tools:visibility="visible" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progressbar_recordings_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_error"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.5" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">iRecorder</string>
     <string name="text_btn_home_show_recordings">Show Recordings</string>
+    <string name="text_btn_retry">Retry</string>
+    <string name="text_item_recording_name">%1$s %2$s</string>
+    <string name="error_message_no_recording">You have no recordings yet!</string>
 </resources>
