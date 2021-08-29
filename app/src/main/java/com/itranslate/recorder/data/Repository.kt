@@ -29,6 +29,12 @@ interface Repository {
 
     /**
      * Used paging 3 [DataSource.Factory] as return type to implement paginated flow of [Record]s
+     * @return Not sorted paged list of [Record]s
+     */
+    fun getRecords(): Flow<PagingData<Record>>
+
+    /**
+     * Used paging 3 [DataSource.Factory] as return type to implement paginated flow of [Record]s
      * @return Sorted paged list of [Record]s
      */
     fun getSortedRecords(): Flow<PagingData<Record>>

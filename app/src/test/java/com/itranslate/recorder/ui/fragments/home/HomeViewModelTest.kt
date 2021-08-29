@@ -44,7 +44,7 @@ class HomeViewModelTest {
             val newRecord = Record(recordName = "Recording 0")
             viewModel.insertRecord(newRecord)
 
-            viewModel.getSortedRecords()
+            viewModel.getRecords()
 
             val records = viewModel.recordsFlow.firstOrNull()
 

@@ -32,6 +32,20 @@ class RepositoryImpl @Inject constructor(
         return localRepository.deleteRecord(record)
     }
 
+    override fun getRecords(): Flow<PagingData<Record>> {
+        val records = localRepository.getRecords()
+        return Pager(
+            PagingConfig(
+                pageSize = 25,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+                initialLoadSize = 100
+            )
+        ) {
+            records.asPagingSourceFactory(dispatcher).invoke()
+        }.flow
+    }
+
     /**
      * Initial load size is raised to 100 following documentation recommending to set a larger value
      */

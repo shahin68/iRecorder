@@ -26,9 +26,9 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow(PagingData.empty())
     val recordsFlow: Flow<PagingData<Record>> = _recordsFlow
 
-    fun getSortedRecords() {
+    fun getRecords() {
         viewModelScope.launch {
-            repository.getSortedRecords().cachedIn(viewModelScope).collectLatest {
+            repository.getRecords().cachedIn(viewModelScope).collectLatest {
                 val previousValue = _recordsFlow.value
                 _recordsFlow.compareAndSet(
                     previousValue,
