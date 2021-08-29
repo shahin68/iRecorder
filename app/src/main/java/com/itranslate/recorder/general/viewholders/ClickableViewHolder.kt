@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
  * @param T is any data class representing content of the view holder
  * @param clickCallback is a callback returning item content
  */
-class ClickableViewHolder<T: Any>(
+open class ClickableViewHolder<T: Any>(
     view: View,
     private val clickCallback: (
         view: View,
@@ -18,9 +18,9 @@ class ClickableViewHolder<T: Any>(
 ) : RecyclerView.ViewHolder(view) {
 
     /**
-     * Bind data with item view
+     * Bind data with view
      */
-    fun bind(item: T) {
+    open fun bind(item: T) {
         itemView.setOnClickListener {
             clickCallback.invoke(
                 it,
