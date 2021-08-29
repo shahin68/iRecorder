@@ -9,6 +9,9 @@ import com.itranslate.recorder.general.extensions.showOrHide
 
 class BindingAdapterUtils {
     companion object {
+        /**
+         * Binding adapter responsible of binding [CombinedLoadStates] with [CircularProgressIndicator]
+         */
         @JvmStatic
         @BindingAdapter("app:circularProgressIndicator_setShowOrHide")
         fun setShowOrHide(circularProgressIndicator: CircularProgressIndicator, combinedStates: CombinedLoadStates) {
@@ -30,6 +33,9 @@ class BindingAdapterUtils {
             }
         }
 
+        /**
+         * Binding adapter responsible of binding [showLoading] with [LinearProgressIndicator]
+         */
         @JvmStatic
         @BindingAdapter("app:linearProgressIndicator_setShowOrHide")
         fun setShowOrHide(linearProgressIndicator: LinearProgressIndicator, showLoading: Boolean) {
