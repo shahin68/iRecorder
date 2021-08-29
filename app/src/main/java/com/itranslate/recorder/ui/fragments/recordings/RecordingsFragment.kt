@@ -5,11 +5,13 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
+import androidx.recyclerview.widget.ItemTouchHelper
 import com.itranslate.recorder.R
 import com.itranslate.recorder.databinding.FragmentRecordingsBinding
 import com.itranslate.recorder.general.extensions.addEnterExitSharedAxisTransition
 import com.itranslate.recorder.general.extensions.visibleOrGone
 import com.itranslate.recorder.general.helpers.DividerItemDecoration
+import com.itranslate.recorder.general.helpers.SwipeToDeleteTouchHelper
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordingLoadStateAdapter
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordsAdapter
@@ -39,27 +41,36 @@ class RecordingsFragment :
         setupRecordingsList()
 
         observeRecordings()
+
     }
 
     private fun setupRecordingsList() {
+        // set item decoration
+        binding.rvRecordingsList.addItemDecoration(DividerItemDecoration(requireContext()))
+
+        // set item touch helper for swipe to delete action
+        ItemTouchHelper(SwipeToDeleteTouchHelper(0, ItemTouchHelper.LEFT) {
+
+        }).attachToRecyclerView(binding.rvRecordingsList)
+
+        // set adapter with load state footer & load state listener
         binding.recordingsAdapter = recordsAdapter.apply {
             withLoadStateFooter(footer = RecordingLoadStateAdapter())
-        }
-        binding.rvRecordingsList.addItemDecoration(DividerItemDecoration(requireContext()))
-        recordsAdapter.addLoadStateListener { combinedState ->
-            if (isAdded) {
-                binding.combinedLoadStates = combinedState
-                when (val state = combinedState.append) {
-                    is LoadState.NotLoading -> {
-                        showEmptyView(
-                            show = recordsAdapter.itemCount < 1,
-                            getString(R.string.error_message_no_recording)
-                        )
-                    }
-                    is LoadState.Error -> {
-                        showEmptyView(
-                            show = true, state.error.localizedMessage
-                        )
+            addLoadStateListener { combinedState ->
+                if (isAdded) {
+                    binding.combinedLoadStates = combinedState
+                    when (val state = combinedState.append) {
+                        is LoadState.NotLoading -> {
+                            showEmptyView(
+                                show = recordsAdapter.itemCount < 1,
+                                getString(R.string.error_message_no_recording)
+                            )
+                        }
+                        is LoadState.Error -> {
+                            showEmptyView(
+                                show = true, state.error.localizedMessage
+                            )
+                        }
                     }
                 }
             }
