@@ -51,6 +51,13 @@ class RecordingsFragment :
         // set item touch helper for swipe to delete action
         ItemTouchHelper(SwipeToDeleteTouchHelper(0, ItemTouchHelper.LEFT) {
 
+            val swipedRecord =
+                recordsAdapter.peek(it.bindingAdapterPosition) ?: return@SwipeToDeleteTouchHelper
+
+            lifecycleScope.launch {
+                viewModel.deleteRecord(swipedRecord)
+            }
+
         }).attachToRecyclerView(binding.rvRecordingsList)
 
         // set adapter with load state footer & load state listener

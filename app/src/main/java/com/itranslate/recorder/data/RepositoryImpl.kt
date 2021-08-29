@@ -28,6 +28,13 @@ class RepositoryImpl @Inject constructor(
         return localRepository.insertRecord(record)
     }
 
+    override suspend fun deleteRecord(record: Record) {
+        return localRepository.deleteRecord(record)
+    }
+
+    /**
+     * Initial load size is raised to 100 following documentation recommending to set a larger value
+     */
     override fun getSortedRecords(): Flow<PagingData<Record>> {
         val records = localRepository.getSortedRecords()
         return Pager(
@@ -35,7 +42,7 @@ class RepositoryImpl @Inject constructor(
                 pageSize = 25,
                 prefetchDistance = 5,
                 enablePlaceholders = false,
-                initialLoadSize = 25
+                initialLoadSize = 100
             )
         ) {
             records.asPagingSourceFactory(dispatcher).invoke()

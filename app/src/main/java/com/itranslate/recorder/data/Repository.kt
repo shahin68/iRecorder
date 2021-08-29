@@ -23,6 +23,11 @@ interface Repository {
     suspend fun insertRecord(record: Record)
 
     /**
+     * Query to remove one [record]
+     */
+    suspend fun deleteRecord(record: Record)
+
+    /**
      * Used paging 3 [DataSource.Factory] as return type to implement paginated flow of [Record]s
      * @return Sorted paged list of [Record]s
      */
