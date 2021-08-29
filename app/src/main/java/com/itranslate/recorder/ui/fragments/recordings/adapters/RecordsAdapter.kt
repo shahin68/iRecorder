@@ -28,11 +28,6 @@ class RecordsAdapter(
         }
     }
 
-    /**
-     * function calculating last item position
-     */
-    private fun lastItemPosition() = itemCount - 1
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordViewHolder {
         return RecordViewHolder(
             ItemRecordingBinding.inflate(LayoutInflater.from(parent.context), parent, false),
@@ -44,7 +39,6 @@ class RecordsAdapter(
         val item = getItem(position)
         if (item != null) {
             holder.bind(item)
-            holder.setDividerVisibility(position != lastItemPosition())
         }
     }
 }

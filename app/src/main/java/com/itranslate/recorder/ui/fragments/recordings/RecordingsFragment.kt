@@ -9,6 +9,7 @@ import com.itranslate.recorder.R
 import com.itranslate.recorder.databinding.FragmentRecordingsBinding
 import com.itranslate.recorder.general.extensions.addEnterExitSharedAxisTransition
 import com.itranslate.recorder.general.extensions.visibleOrGone
+import com.itranslate.recorder.general.helpers.DividerItemDecoration
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordingLoadStateAdapter
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordsAdapter
@@ -44,6 +45,7 @@ class RecordingsFragment :
         binding.recordingsAdapter = recordsAdapter.apply {
             withLoadStateFooter(footer = RecordingLoadStateAdapter())
         }
+        binding.rvRecordingsList.addItemDecoration(DividerItemDecoration(requireContext()))
         recordsAdapter.addLoadStateListener { combinedState ->
             if (isAdded) {
                 binding.combinedLoadStates = combinedState
