@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.io.File
 
 
 class RecordingsFragment :
@@ -28,13 +29,12 @@ class RecordingsFragment :
 
     private val viewModel: RecordingsViewModel by viewModel()
     private var mediaPlayer: MediaPlayer? = null
-    private val recordsAdapter = RecordsAdapter { view, position, clickType ->
-        when (val item = clickType) {
+    private val recordsAdapter = RecordsAdapter { _, position, clickType ->
+        when (clickType) {
             is ClickableViewHolder.ClickType.ToOpen -> {
-                item.data.recordPath?.let {
-                    Log.i(this@RecordingsFragment::class.simpleName, it)
-                    startPlaying(it)
-                }
+                val path = clickType.data.recordPath
+                Log.d(this@RecordingsFragment::class.simpleName, path)
+                startPlaying(path)
             }
         }
     }
@@ -65,7 +65,7 @@ class RecordingsFragment :
 
             lifecycleScope.launch {
                 viewModel.deleteRecord(swipedRecord)
-                // Todo also remove the file from storage
+                File(swipedRecord.recordPath).delete()
             }
 
         }).attachToRecyclerView(binding.rvRecordingsList)
@@ -107,6 +107,10 @@ class RecordingsFragment :
         }
     }
 
+    /**
+     * instantiate received records observer
+     * A flow of record table will be collected where all changes are seemingly submitted to the [recordsAdapter]
+     */
     private fun observeRecordings() {
         lifecycleScope.launch {
             viewModel.getSortedRecordings().collectLatest {
@@ -115,6 +119,9 @@ class RecordingsFragment :
         }
     }
 
+    /**
+     * function to start playing audio record
+     */
     private fun startPlaying(audioPath: String) {
         mediaPlayer = MediaPlayer().apply {
             try {
@@ -132,6 +139,9 @@ class RecordingsFragment :
         }
     }
 
+    /**
+     * function to stop playing audio record
+     */
     private fun stopPlaying() {
         mediaPlayer?.release()
         mediaPlayer = null

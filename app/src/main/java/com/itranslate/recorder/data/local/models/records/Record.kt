@@ -24,6 +24,6 @@ data class Record(
     val recordId: Int? = null,
 
     @ColumnInfo(name = "record_name") val recordName: String,
-    @ColumnInfo(name = "record_path") val recordPath: String? = "",
-    @ColumnInfo(name = "record_duration") val recordDuration: String? = "00:00"
+    @ColumnInfo(name = "record_path") val recordPath: String,
+    @ColumnInfo(name = "record_duration") val recordDuration: String
 )

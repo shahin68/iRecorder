@@ -2,9 +2,9 @@ package com.itranslate.recorder.ui.fragments.home
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -26,12 +26,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
     private val viewModel: HomeViewModel by viewModel()
 
+    private lateinit var audioFile: File
     private var audioDuration = "00:00"
-    private var timerTask: Timer? = null
+    private var isRecording = false
     private var mediaRecorder: MediaRecorder? = null
-    private var mediaPlayer: MediaPlayer? = null
-
-    private var mStartRecording = true
+    private var timerTask: Timer? = null
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -66,35 +65,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
     }
 
-    private fun startRecordingProcess() {
-        onRecord(createFile(), mStartRecording)
-        binding.btnHomeMic.setImageResource(
-            when (mStartRecording) {
-                true -> R.drawable.ic_stop
-                false -> R.drawable.ic_mic
-            }
-        )
-        mStartRecording = !mStartRecording
-    }
-
-    private fun insertRecordInDb(audioFile: File) {
-        lifecycleScope.launch {
-            viewModel.insertRecordInDb(
-                Record(
-                    recordName = GENERIC_FILE_NAME,
-                    recordPath = audioFile.path,
-                    recordDuration = audioDuration
-                )
-            )
-            showSnackBar(
-                message = getString(
-                    R.string.snackbar_message_record_added,
-                    audioFile.name
-                )
-            )
-        }
-    }
-
+    /**
+     * function to request audio recording permission
+     */
     private fun requestPermissionAudioRecording(permissionGranted: () -> Unit) {
         when {
             ContextCompat.checkSelfPermission(
@@ -112,6 +85,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
     }
 
+    /**
+     * launch permission dialog when permission is denied
+     * dialog will elaborate on the permission
+     * user will be redirected to app setting
+     */
     private fun launchPermissionDialogRationale() {
         launchAlertDialog(
             getString(R.string.text_btn_open_settings),
@@ -122,51 +100,44 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
     }
 
-    private fun onRecord(audioFile: File, start: Boolean) = if (start) {
-        startRecording(audioFile)
-    } else {
-        stopRecording(audioFile)
-    }
-
-    private fun onPlay(audioFile: File, start: Boolean) = if (start) {
-        startPlaying(audioFile)
-    } else {
-        stopPlaying()
-    }
-
-    private fun startPlaying(audioFile: File) {
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(audioFile.path)
-            prepare()
-            setOnCompletionListener {
-                if (isVisible) {
-                    stopPlaying()
-                }
+    /**
+     * function to start running recording process
+     */
+    private fun startRecordingProcess() {
+        when (isRecording) {
+            true -> {
+                binding.btnHomeMic.setImageResource(R.drawable.ic_mic)
+                stopRecording()
             }
-            start()
+            false -> {
+                audioFile = createFile()
+                startRecording()
+                binding.btnHomeMic.setImageResource(R.drawable.ic_stop)
+            }
+        }
+        isRecording = !isRecording
+    }
+
+    /**
+     * function to start and instantiate audio recording
+     */
+    private fun startRecording() {
+        if (::audioFile.isInitialized) {
+            mediaRecorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setOutputFile(audioFile.path)
+                prepare()
+                start()
+                runRecordTimerTask()
+            }
         }
     }
 
-    private fun stopPlaying() {
-        mediaPlayer?.release()
-        mediaPlayer = null
-        timerTask?.cancel()
-        timerTask = null
-    }
-
-    private fun startRecording(audioFile: File) {
-        resetMediaRecorder()
-        mediaRecorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(audioFile.path)
-            prepare()
-            start()
-            runRecordTimerTask()
-        }
-    }
-
+    /**
+     * function to keep track of audio duration
+     */
     private fun runRecordTimerTask() {
         var remainingTimeInSeconds = -1
         timerTask?.cancel()
@@ -176,25 +147,54 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             val minutes = remainingTimeInSeconds % 3600 / 60
             val seconds = remainingTimeInSeconds % 60
 
-            audioDuration = String.format("%02d:%02d", minutes, seconds)
+            val duration = String.format("%02d:%02d", minutes, seconds)
+
+            Log.i(this@HomeFragment::class.simpleName, duration)
+            audioDuration = duration
         }
     }
 
-    private fun stopRecording(audioFile: File) {
+    /**
+     * function to stop stop the recording
+     */
+    private fun stopRecording() {
         mediaRecorder?.apply {
             stop()
             release()
         }
         mediaRecorder = null
-        insertRecordInDb(audioFile)
+        timerTask?.cancel()
+        timerTask = null
+        insertRecordInDb()
     }
 
-    override fun onStop() {
-        super.onStop()
-        resetMediaRecorder()
-        resetMediaPlayer()
+    /**
+     * insert record into database after record is done and stopped
+     */
+    private fun insertRecordInDb() {
+        if (::audioFile.isInitialized) {
+            Log.d(this::class.simpleName, audioFile.path)
+            lifecycleScope.launch {
+                viewModel.insertRecordInDb(
+                    Record(
+                        recordName = GENERIC_FILE_NAME,
+                        recordPath = audioFile.path,
+                        recordDuration = audioDuration
+                    )
+                )
+                showSnackBar(
+                    message = getString(
+                        R.string.snackbar_message_record_added,
+                        audioFile.name
+                    )
+                )
+            }
+        }
     }
 
+    /**
+     * stop and reset [mediaRecorder] & [timerTask] & [audioDuration]
+     */
     private fun resetMediaRecorder() {
         mediaRecorder?.release()
         mediaRecorder = null
@@ -203,8 +203,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         audioDuration = "00:00"
     }
 
-    private fun resetMediaPlayer() {
-        mediaPlayer?.release()
-        mediaPlayer = null
+    override fun onStop() {
+        super.onStop()
+        resetMediaRecorder()
     }
 }
