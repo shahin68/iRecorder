@@ -1,5 +1,8 @@
 package com.itranslate.recorder.general.extensions
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -50,14 +53,24 @@ sealed class DialogResult {
 /**
  * Extension function launching alert dialog
  */
-fun <T : Fragment> T.launchAlertDialog(title: String, message: String, callback: () -> Unit) {
+fun <T : Fragment> T.launchAlertDialog(btnText: String, title: String, message: String, callback: () -> Unit) {
     MaterialAlertDialogBuilder(requireContext())
         .setTitle(title)
         .setMessage(message)
-        .setPositiveButton(getString(R.string.text_btn_ok)) { dialog, _ ->
+        .setPositiveButton(btnText) { dialog, _ ->
             dialog.dismiss()
             callback.invoke()
         }
         .show()
+}
+
+/**
+ * Extension function to launch app settings
+ * To be used after permission denied dialog is shown
+ */
+fun <T : Fragment> T.launchSettingsIntent() {
+    startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        data = Uri.fromParts("package", requireActivity().packageName, null)
+    })
 }
 
