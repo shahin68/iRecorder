@@ -14,11 +14,11 @@ class RecordingLoadStateViewHolder(
 
     fun bindState(loadState: LoadState) {
         if (loadState is LoadState.Error) {
-            binding.tvMessage.text = loadState.error.localizedMessage
+            binding.txtMessage.text = loadState.error.localizedMessage
         }
 
         binding.progressbarLoading.visibleOrGone(loadState is LoadState.Loading)
-        binding.tvMessage.visibleOrGone(loadState is LoadState.Error)
+        binding.txtMessage.visibleOrGone(loadState is LoadState.Error)
     }
 
 }

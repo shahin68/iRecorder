@@ -25,7 +25,7 @@
             app:linearProgressIndicator_setShowOrHide="@{showOrHideLoading}" />
 
         <TextView
-            android:id="@+id/tv_message"
+            android:id="@+id/txt_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
