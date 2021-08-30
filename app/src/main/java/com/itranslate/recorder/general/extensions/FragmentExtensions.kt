@@ -42,13 +42,13 @@ fun <T : Fragment> T.launchConfirmationDialog(
     MaterialAlertDialogBuilder(requireContext())
         .setTitle(title)
         .setMessage(message)
-        .setNegativeButton(getString(R.string.text_btn_cancel)) { dialog, _ ->
+        .setNegativeButton(getString(R.string.text_btn_no)) { dialog, _ ->
             dialog.dismiss()
-            callback.invoke(DialogResult.Cancel)
+            callback.invoke(DialogResult.Negative)
         }
-        .setPositiveButton(getString(R.string.text_btn_save)) { dialog, _ ->
+        .setPositiveButton(getString(R.string.text_btn_yes)) { dialog, _ ->
             dialog.dismiss()
-            callback.invoke(DialogResult.Save)
+            callback.invoke(DialogResult.Positive)
         }
         .show()
 }
@@ -57,8 +57,8 @@ fun <T : Fragment> T.launchConfirmationDialog(
  * Sealed class representing dialog response types
  */
 sealed class DialogResult {
-    object Cancel : DialogResult()
-    object Save : DialogResult()
+    object Negative : DialogResult()
+    object Positive : DialogResult()
 }
 
 /**
