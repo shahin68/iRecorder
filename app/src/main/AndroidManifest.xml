@@ -16,7 +16,6 @@
         android:theme="@style/Theme.IRecorder">
         <activity
             android:name=".ui.MainActivity"
-            android:exported="false"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

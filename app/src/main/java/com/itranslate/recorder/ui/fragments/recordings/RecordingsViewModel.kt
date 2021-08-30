@@ -6,13 +6,10 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.itranslate.recorder.data.Repository
 import com.itranslate.recorder.data.local.models.records.Record
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import javax.inject.Inject
 
-@HiltViewModel
-class RecordingsViewModel @Inject constructor(
+class RecordingsViewModel(
     private val repository: Repository
 ) : ViewModel() {
 

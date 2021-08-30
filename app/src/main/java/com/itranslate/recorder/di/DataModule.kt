@@ -6,32 +6,10 @@ import com.itranslate.recorder.data.local.sources.LocalRepository
 import com.itranslate.recorder.data.local.sources.LocalRepositoryImpl
 import com.itranslate.recorder.data.remote.sources.RemoteRepository
 import com.itranslate.recorder.data.remote.sources.RemoteRepositoryImpl
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import org.koin.dsl.module
 
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class DataModule {
-
-    @Singleton
-    @Binds
-    abstract fun bindLocalRepository(
-        localRepositoryImpl: LocalRepositoryImpl
-    ): LocalRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindRemoteRepository(
-        remoteRepositoryImpl: RemoteRepositoryImpl
-    ): RemoteRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindRepository(
-        repositoryImpl: RepositoryImpl
-    ): Repository
-
+val dataModule = module {
+    single<LocalRepository> { LocalRepositoryImpl(get()) }
+    single<RemoteRepository> { RemoteRepositoryImpl() }
+    single<Repository> { RepositoryImpl(get(), get()) }
 }

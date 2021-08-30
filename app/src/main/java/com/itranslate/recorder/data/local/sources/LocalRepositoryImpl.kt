@@ -3,7 +3,6 @@ package com.itranslate.recorder.data.local.sources
 import androidx.paging.DataSource
 import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.data.local.sources.db.records.RecordsDao
-import javax.inject.Inject
 
 /**
  * Local data source access point
@@ -13,7 +12,7 @@ import javax.inject.Inject
  *
  * @param recordsDao is an access point for records table through local database
  */
-class LocalRepositoryImpl @Inject constructor(
+class LocalRepositoryImpl(
     private val recordsDao: RecordsDao
 ): LocalRepository {
     override suspend fun insertRecord(record: Record) {

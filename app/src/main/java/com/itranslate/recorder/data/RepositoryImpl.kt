@@ -6,10 +6,9 @@ import androidx.paging.PagingData
 import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.data.local.sources.LocalRepository
 import com.itranslate.recorder.data.remote.sources.RemoteRepository
-import com.itranslate.recorder.di.DispatcherModule
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
 /**
  * Class representing a single data source to all other parts of the project
@@ -18,10 +17,10 @@ import javax.inject.Inject
  * including View Models
  *
  */
-class RepositoryImpl @Inject constructor(
+class RepositoryImpl(
     private val localRepository: LocalRepository,
     private val remoteRepository: RemoteRepository,
-    @DispatcherModule.IoDispatcher private val dispatcher: CoroutineDispatcher
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : Repository {
 
     override suspend fun insertRecord(record: Record) {

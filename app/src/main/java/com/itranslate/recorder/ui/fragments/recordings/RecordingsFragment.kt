@@ -2,7 +2,6 @@ package com.itranslate.recorder.ui.fragments.recordings
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -15,17 +14,16 @@ import com.itranslate.recorder.general.helpers.SwipeToDeleteTouchHelper
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordingLoadStateAdapter
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordsAdapter
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-@AndroidEntryPoint
 class RecordingsFragment :
     BaseFragment<FragmentRecordingsBinding>(FragmentRecordingsBinding::inflate) {
 
-    private val viewModel: RecordingsViewModel by viewModels()
+    private val viewModel: RecordingsViewModel by viewModel()
     private val recordsAdapter = RecordsAdapter { view, position, clickType ->
 
     }

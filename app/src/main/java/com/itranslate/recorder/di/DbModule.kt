@@ -1,34 +1,25 @@
 package com.itranslate.recorder.di
 
-import android.content.Context
+import android.app.Application
 import androidx.room.Room
 import com.itranslate.recorder.data.local.sources.db.AppDatabase
 import com.itranslate.recorder.data.local.sources.db.records.RecordsDao
 import com.itranslate.recorder.general.Constants.DATABASE_NAME
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import org.koin.android.ext.koin.androidApplication
+import org.koin.dsl.module
 
 /**
  * Module responsible for providing single instance of [AppDatabase] & [RecordsDao]
  */
-@Module
-@InstallIn(SingletonComponent::class)
-object DbModule {
-
-    @Singleton
-    @Provides
-    fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
-        return Room.databaseBuilder(appContext, AppDatabase::class.java, DATABASE_NAME)
-            .fallbackToDestructiveMigration()
-            .build()
-    }
-
-    @Singleton
-    @Provides
-    fun provideRecordsDao(appDatabase: AppDatabase) = appDatabase.recordsDao()
-
+val dbModule = module {
+    single { provideDatabase(androidApplication()) }
+    single { provideRecordsDao(get()) }
 }
+
+private fun provideDatabase(application: Application): AppDatabase {
+    return Room.databaseBuilder(application, AppDatabase::class.java, DATABASE_NAME)
+        .fallbackToDestructiveMigration()
+        .build()
+}
+
+private fun provideRecordsDao(appDatabase: AppDatabase) = appDatabase.recordsDao()

@@ -6,30 +6,17 @@ import androidx.navigation.Navigation
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.itranslate.recorder.R
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.robolectric.annotation.Config
 
 @MediumTest
-@HiltAndroidTest
-@Config(application = HiltTestApplication::class)
+@RunWith(AndroidJUnit4::class)
 class HomeFragmentTest {
-
-    @get:Rule(order = 0)
-    var hiltRule = HiltAndroidRule(this)
-
-    @Before
-    fun setup() {
-        hiltRule.inject()
-    }
 
     /**
      * Testing navigation ui to verify whether by clicking on show recording button
