@@ -56,6 +56,14 @@ class RecordingsFragment :
 
     }
 
+    /**
+     * invalidate [mediaPlayer] when fragment is destroyed and not visible anymore
+     */
+    override fun onDestroy() {
+        super.onDestroy()
+        invalidateMediaPlayer()
+    }
+
     private fun setupRecordingsList() {
         // set item decoration
         binding.rvRecordingsList.addItemDecoration(DividerItemDecoration(requireContext()))
@@ -99,6 +107,18 @@ class RecordingsFragment :
     }
 
     /**
+     * instantiate received records observer
+     * A flow of record table will be collected where all changes are seemingly submitted to the [recordsAdapter]
+     */
+    private fun observeRecordings() {
+        lifecycleScope.launch {
+            viewModel.getSortedRecordings().collectLatest {
+                recordsAdapter.submitData(it)
+            }
+        }
+    }
+
+    /**
      * function to show undo deletion snack bar
      */
     private fun launchUndoRecordDeletionSnackBar(record: Record) {
@@ -128,18 +148,6 @@ class RecordingsFragment :
             delay(500)
             if (isAdded && isVisible) {
                 binding.tvError.text = errorMessage
-            }
-        }
-    }
-
-    /**
-     * instantiate received records observer
-     * A flow of record table will be collected where all changes are seemingly submitted to the [recordsAdapter]
-     */
-    private fun observeRecordings() {
-        lifecycleScope.launch {
-            viewModel.getSortedRecordings().collectLatest {
-                recordsAdapter.submitData(it)
             }
         }
     }
@@ -180,11 +188,4 @@ class RecordingsFragment :
         mediaPlayer = null
     }
 
-    /**
-     * invalidate [mediaPlayer] when fragment is destroyed and not visible anymore
-     */
-    override fun onDestroy() {
-        super.onDestroy()
-        invalidateMediaPlayer()
-    }
 }
