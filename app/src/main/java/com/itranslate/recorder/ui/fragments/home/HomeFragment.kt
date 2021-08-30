@@ -187,7 +187,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                         R.string.snackbar_message_record_added,
                         audioFile.name
                     )
-                )
+                ) {}
             }
         }
     }

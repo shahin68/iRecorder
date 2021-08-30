@@ -13,6 +13,10 @@ class RecordingsViewModel(
     private val repository: Repository
 ) : ViewModel() {
 
+    suspend fun insertRecordInDb(record: Record) {
+        return repository.insertRecord(record)
+    }
+
     suspend fun deleteRecord(record: Record) {
         return repository.deleteRecord(record)
     }

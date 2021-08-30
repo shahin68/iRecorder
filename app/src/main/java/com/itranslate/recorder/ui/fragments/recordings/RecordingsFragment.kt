@@ -8,8 +8,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.itranslate.recorder.R
+import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.databinding.FragmentRecordingsBinding
+import com.itranslate.recorder.general.extensions.SnackBarCallBack
 import com.itranslate.recorder.general.extensions.addEnterExitSharedAxisTransition
+import com.itranslate.recorder.general.extensions.showSnackBar
 import com.itranslate.recorder.general.extensions.visibleOrGone
 import com.itranslate.recorder.general.helpers.DividerItemDecoration
 import com.itranslate.recorder.general.helpers.SwipeToDeleteTouchHelper
@@ -65,8 +68,9 @@ class RecordingsFragment :
 
             lifecycleScope.launch {
                 viewModel.deleteRecord(swipedRecord)
-                File(swipedRecord.recordPath).delete()
             }
+
+            launchUndoRecordDeletionSnackBar(record = swipedRecord)
 
         }).attachToRecyclerView(binding.rvRecordingsList)
 
@@ -90,6 +94,27 @@ class RecordingsFragment :
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * function to show undo deletion snack bar
+     */
+    private fun launchUndoRecordDeletionSnackBar(record: Record) {
+        showSnackBar(
+            getString(
+                R.string.snackbar_message_record_removed,
+                record.recordName
+            ), getString(R.string.text_btn_undo)
+        ) {
+            when (it) {
+                SnackBarCallBack.Action -> {
+                    lifecycleScope.launch {
+                        viewModel.insertRecordInDb(record)
+                    }
+                }
+                SnackBarCallBack.Dismiss -> File(record.recordPath).delete()
             }
         }
     }
