@@ -31,16 +31,16 @@ class RecordingsFragment :
     BaseFragment<FragmentRecordingsBinding>(FragmentRecordingsBinding::inflate) {
 
     private val viewModel: RecordingsViewModel by viewModel()
-    private var mediaPlayer: MediaPlayer? = null
     private val recordsAdapter = RecordsAdapter { _, position, clickType ->
         when (clickType) {
             is ClickableViewHolder.ClickType.ToOpen -> {
                 val path = clickType.data.recordPath
                 Log.d(this@RecordingsFragment::class.simpleName, path)
-                startPlaying(path)
+                startMediaPlayer(path)
             }
         }
     }
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,14 +147,17 @@ class RecordingsFragment :
     /**
      * function to start playing audio record
      */
-    private fun startPlaying(audioPath: String) {
+    private fun startMediaPlayer(audioPath: String) {
+        if (mediaPlayer != null) {
+            stopMediaPlayer()
+        }
         mediaPlayer = MediaPlayer().apply {
             try {
                 setDataSource(audioPath)
                 prepare()
                 setOnCompletionListener {
                     if (isVisible) {
-                        stopPlaying()
+                        invalidateMediaPlayer()
                     }
                 }
                 start()
@@ -164,10 +167,15 @@ class RecordingsFragment :
         }
     }
 
+    private fun stopMediaPlayer() {
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+    }
+
     /**
      * function to stop playing audio record
      */
-    private fun stopPlaying() {
+    private fun invalidateMediaPlayer() {
         mediaPlayer?.release()
         mediaPlayer = null
     }
@@ -177,6 +185,6 @@ class RecordingsFragment :
      */
     override fun onDestroy() {
         super.onDestroy()
-        stopPlaying()
+        invalidateMediaPlayer()
     }
 }
