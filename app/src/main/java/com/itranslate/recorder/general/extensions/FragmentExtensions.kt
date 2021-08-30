@@ -8,6 +8,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialSharedAxis
 import com.itranslate.recorder.R
 import com.itranslate.recorder.general.Constants.FILE_NAME_PATTERN
@@ -32,7 +33,11 @@ fun <T : Fragment> T.getDrawable(@DrawableRes drawableResourceId: Int) =
 /**
  * Extension function to launch a confirmation dialog
  */
-fun <T : Fragment> T.launchConfirmationDialog(title: String, message: String, callback: (DialogResult) -> Unit) {
+fun <T : Fragment> T.launchConfirmationDialog(
+    title: String,
+    message: String,
+    callback: (DialogResult) -> Unit
+) {
     MaterialAlertDialogBuilder(requireContext())
         .setTitle(title)
         .setMessage(message)
@@ -51,14 +56,19 @@ fun <T : Fragment> T.launchConfirmationDialog(title: String, message: String, ca
  * Sealed class representing dialog response types
  */
 sealed class DialogResult {
-    object Cancel: DialogResult()
-    object Save: DialogResult()
+    object Cancel : DialogResult()
+    object Save : DialogResult()
 }
 
 /**
  * Extension function launching alert dialog
  */
-fun <T : Fragment> T.launchAlertDialog(btnText: String, title: String, message: String, callback: () -> Unit) {
+fun <T : Fragment> T.launchAlertDialog(
+    btnText: String,
+    title: String,
+    message: String,
+    callback: () -> Unit
+) {
     MaterialAlertDialogBuilder(requireContext())
         .setTitle(title)
         .setMessage(message)
@@ -89,5 +99,25 @@ fun <T : Fragment> T.createFile(): File {
         Locale.getDefault()
     ).format(Date())
     return File(storageDir, "$timeStamp.mp3")
+}
+
+/**
+ * Extension function to show snack bar
+ * registers callback
+ * invoke [actionCallback] callback when [actionText] is provided
+ */
+fun <T : Fragment> T.showSnackBar(
+    message: String,
+    actionText: String? = null,
+    actionCallback: (() -> Unit)? = null
+) {
+    Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).apply {
+        if (actionText == null) {
+            return@apply
+        }
+        setAction(actionText) {
+            actionCallback?.invoke()
+        }
+    }.show()
 }
 
