@@ -46,16 +46,25 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '1.8'
         freeCompilerArgs += ["-Xopt-in=kotlin.RequiresOptIn"]
     }
     buildFeatures {
         viewBinding true
         dataBinding true
+    }
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
+    kapt {
+        correctErrorTypes true
+        javacOptions {
+            option("-Adagger.hilt.android.internal.disableAndroidSuperclassValidation=true")
+        }
     }
     packagingOptions {
         /*After adding androidx.arch.core:core-testing instrumented test build failed with error
@@ -64,6 +73,8 @@ android {
         * temporarily*/
         exclude 'META-INF/AL2.0'
         exclude 'META-INF/LGPL2.1'
+        exclude "**/attach_hotspot_windows.dll"
+        exclude "META-INF/licenses/**"
     }
 }
 
@@ -77,9 +88,11 @@ final TRUTH = '1.1'
 
 dependencies {
     // Kotlin core
-    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.20"
+    implementation 'androidx.core:core-ktx:1.5.0'
 
     // UI components
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
@@ -97,8 +110,7 @@ dependencies {
 
     // Jetpack Hilt dependency injection
     implementation("com.google.dagger:hilt-android:$HILT")
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    kapt("com.google.dagger:hilt-android-compiler:$HILT")
+    kapt("com.google.dagger:hilt-compiler:$HILT")
 
     // Jetpack paging llibrary
     implementation("androidx.paging:paging-runtime-ktx:$PAGING")
@@ -113,11 +125,21 @@ dependencies {
     testImplementation("com.google.truth:truth:$TRUTH") // truth
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$COROUTINES") // coroutines test tools
     testImplementation('androidx.arch.core:core-testing:2.1.0') // architectural test tools
+    testImplementation('org.mockito:mockito-android:3.2.4') // mockito tools
+    testImplementation("com.google.dagger:hilt-android-testing:$HILT") // hilt test tools
+    kaptTest("com.google.dagger:hilt-android-compiler:$HILT") // hilt test kotlin compiler
 
     // Instrumented tests
     androidTestImplementation('androidx.test.ext:junit:1.1.3')
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.4.0') // espresso
+    androidTestImplementation('androidx.test:rules:1.4.1-alpha01') // test tules
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.5.0-alpha01') // espresso
     androidTestImplementation("com.google.truth:truth:$TRUTH") // truth
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$COROUTINES") // coroutines test tools
     androidTestImplementation('androidx.arch.core:core-testing:2.1.0') // architectural test tools
+    androidTestImplementation('org.mockito:mockito-android:3.2.4') // mockito tools
+    androidTestImplementation("com.google.dagger:hilt-android-testing:$HILT") // hilt test tools
+    kaptAndroidTest("com.google.dagger:hilt-android-compiler:$HILT") // hilt test kotlin compiler
+    debugImplementation('androidx.fragment:fragment-testing:1.3.6') // fragment test scenario
+    androidTestImplementation('androidx.navigation:navigation-testing:2.3.5') // test navigation
+    androidTestImplementation("org.robolectric:robolectric:4.6.1") // robolectrics
 }
