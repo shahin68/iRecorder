@@ -49,6 +49,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        resetMediaRecorder()
+    }
+
     /**
      * Function to prepare all click listeners
      */
@@ -204,11 +209,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         timerTask?.cancel()
         timerTask = null
         audioDuration = "00:00"
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        resetMediaRecorder()
     }
 
     /**
