@@ -5,7 +5,7 @@ An offline audio recorder (For demonstration purposes only)
 * paging3
 * room
 * coroutines
-* livedata
+* flow & load state
 * navigation ui
 * data-binding
 * koin
