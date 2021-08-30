@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.itranslate.recorder">
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:name=".App"
         android:allowBackup="false"
@@ -12,7 +16,7 @@
         android:theme="@style/Theme.IRecorder">
         <activity
             android:name=".ui.MainActivity"
-            android:exported="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
