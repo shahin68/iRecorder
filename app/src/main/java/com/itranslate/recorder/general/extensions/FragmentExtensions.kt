@@ -2,6 +2,7 @@ package com.itranslate.recorder.general.extensions
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import android.provider.Settings
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
@@ -9,6 +10,10 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.transition.platform.MaterialSharedAxis
 import com.itranslate.recorder.R
+import com.itranslate.recorder.general.Constants.FILE_NAME_PATTERN
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Extension function to add enter and exit shared transition in Y axis on fragment
@@ -72,5 +77,17 @@ fun <T : Fragment> T.launchSettingsIntent() {
     startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
         data = Uri.fromParts("package", requireActivity().packageName, null)
     })
+}
+
+/**
+ * Extension function to create a temporary file
+ */
+fun <T : Fragment> T.createFile(): File {
+    val storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+    val timeStamp: String = SimpleDateFormat(
+        FILE_NAME_PATTERN,
+        Locale.getDefault()
+    ).format(Date())
+    return File(storageDir, "$timeStamp.mp3")
 }
 

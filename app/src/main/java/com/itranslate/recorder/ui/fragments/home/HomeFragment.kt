@@ -2,6 +2,8 @@ package com.itranslate.recorder.ui.fragments.home
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
+import android.media.MediaRecorder
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -9,28 +11,38 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itranslate.recorder.R
 import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.databinding.FragmentHomeBinding
 import com.itranslate.recorder.general.Constants.GENERIC_FILE_NAME
-import com.itranslate.recorder.general.extensions.*
+import com.itranslate.recorder.general.extensions.createFile
+import com.itranslate.recorder.general.extensions.launchAlertDialog
+import com.itranslate.recorder.general.extensions.launchSettingsIntent
+import com.itranslate.recorder.general.extensions.onClick
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.io.File
+import java.util.*
+import kotlin.concurrent.timer
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::inflate) {
 
     private val viewModel: HomeViewModel by viewModel()
 
-    private lateinit var voiceRecorderSheet: BottomSheetBehavior<View>
+    private var audioDuration = "00:00"
+    private var timerTask: Timer? = null
+    private var mediaRecorder: MediaRecorder? = null
+    private var mediaPlayer: MediaPlayer? = null
+
+    private var mStartRecording = true
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                addRecording()
+                startRecordingProcess()
             } else {
-                launchPermissionDesc()
+                launchPermissionDialogRationale()
             }
         }
 
@@ -39,7 +51,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
         prepareClickListeners()
 
-        initVoiceRecorderSheet()
     }
 
     /**
@@ -47,10 +58,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
      */
     private fun prepareClickListeners() {
         binding.btnHomeMic.onClick {
-            if (::voiceRecorderSheet.isInitialized) {
-                if (!voiceRecorderSheet.isExpanded()) {
-                    openSheet()
-                }
+            requestPermissionAudioRecording {
+                startRecordingProcess()
             }
         }
 
@@ -61,43 +70,27 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
     }
 
-    private fun initVoiceRecorderSheet() {
-        voiceRecorderSheet = BottomSheetBehavior.from(binding.layoutVoiceRecorder.root)
-        voiceRecorderSheet.isDraggable = false
-
-        binding.layoutVoiceRecorder.btnSheetRecord.setOnClickListener {
-
-        }
-
-        binding.layoutVoiceRecorder.icSheetClose.setOnClickListener {
-            closeSheet()
-        }
-
-        binding.layoutVoiceRecorder.btnSheetSave.setOnClickListener {
-            requestPermissionAudioRecording {
-                addRecording()
+    private fun startRecordingProcess() {
+        onRecord(createFile(), mStartRecording)
+        binding.btnHomeMic.setImageResource(
+            when (mStartRecording) {
+                true -> R.drawable.ic_stop
+                false -> R.drawable.ic_mic
             }
-        }
+        )
+        mStartRecording = !mStartRecording
     }
 
-    private fun addRecording() {
+    private fun insertRecordInDb(audioFile: File) {
         lifecycleScope.launch {
-            viewModel.insertRecord(
-                Record(recordName = GENERIC_FILE_NAME)
+            viewModel.insertRecordInDb(
+                Record(
+                    recordName = GENERIC_FILE_NAME,
+                    recordPath = audioFile.path,
+                    recordDuration = audioDuration
+                )
             )
             Toast.makeText(requireContext(), "Item added", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun openSheet() {
-        if (::voiceRecorderSheet.isInitialized) {
-            voiceRecorderSheet.expand()
-        }
-    }
-
-    private fun closeSheet() {
-        if (::voiceRecorderSheet.isInitialized) {
-            voiceRecorderSheet.collapse()
         }
     }
 
@@ -110,7 +103,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                 permissionGranted.invoke()
             }
             shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) -> {
-                launchPermissionDesc()
+                launchPermissionDialogRationale()
             }
             else -> {
                 requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -118,9 +111,90 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
     }
 
-    private fun launchPermissionDesc() {
-        launchAlertDialog(getString(R.string.text_btn_open_settings), getString(R.string.dialog_title_error_permission_denied), getString(R.string.dialog_message_error_permission_denied)) {
+    private fun launchPermissionDialogRationale() {
+        launchAlertDialog(
+            getString(R.string.text_btn_open_settings),
+            getString(R.string.dialog_title_error_permission_denied),
+            getString(R.string.dialog_message_error_permission_denied)
+        ) {
             launchSettingsIntent()
         }
+    }
+
+    private fun onRecord(audioFile: File, start: Boolean) = if (start) {
+        startRecording(audioFile)
+    } else {
+        stopRecording(audioFile)
+    }
+
+    private fun onPlay(audioFile: File, start: Boolean) = if (start) {
+        startPlaying(audioFile)
+    } else {
+        stopPlaying()
+    }
+
+    private fun startPlaying(audioFile: File) {
+        mediaPlayer = MediaPlayer().apply {
+            setDataSource(audioFile.path)
+            prepare()
+            start()
+        }
+    }
+
+    private fun stopPlaying() {
+        mediaPlayer?.release()
+        mediaPlayer = null
+        timerTask?.cancel()
+        timerTask = null
+    }
+
+    private fun startRecording(audioFile: File) {
+
+        mediaRecorder = MediaRecorder().apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            setOutputFile(audioFile.path)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+            prepare()
+            start()
+            runRecordTimerTask()
+        }
+    }
+
+    private fun runRecordTimerTask() {
+        var remainingTimeInSeconds = -1
+        timerTask?.cancel()
+        timerTask = timer(period = 1000) {
+            remainingTimeInSeconds += 1
+
+            val minutes = remainingTimeInSeconds % 3600 / 60
+            val seconds = remainingTimeInSeconds % 60
+
+            audioDuration = String.format("%02d:%02d", minutes, seconds)
+        }
+    }
+
+    private fun stopRecording(audioFile: File) {
+        mediaRecorder?.apply {
+            stop()
+            release()
+        }
+        mediaRecorder = null
+        insertRecordInDb(audioFile)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        resetAllRecordValues()
+    }
+
+    private fun resetAllRecordValues() {
+        audioDuration = "00:00"
+        mediaRecorder?.release()
+        mediaRecorder = null
+        timerTask?.cancel()
+        timerTask = null
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 }

@@ -15,7 +15,7 @@ class HomeViewModel(
     private val repository: Repository
 ) : ViewModel() {
 
-    suspend fun insertRecord(record: Record) {
+    suspend fun insertRecordInDb(record: Record) {
         return repository.insertRecord(record)
     }
 
@@ -23,7 +23,7 @@ class HomeViewModel(
         MutableStateFlow(PagingData.empty())
     val recordsFlow: Flow<PagingData<Record>> = _recordsFlow
 
-    fun getRecords() {
+    fun getDbRecords() {
         viewModelScope.launch {
             repository.getRecords().cachedIn(viewModelScope).collectLatest {
                 val previousValue = _recordsFlow.value

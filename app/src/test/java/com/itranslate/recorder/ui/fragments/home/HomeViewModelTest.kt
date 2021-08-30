@@ -42,9 +42,9 @@ class HomeViewModelTest {
     fun insertRecord_recordsFlowAtLeastIsNotNull_shouldPass() {
         testDispatcher.runBlockingTest {
             val newRecord = Record(recordName = "Recording 0")
-            viewModel.insertRecord(newRecord)
+            viewModel.insertRecordInDb(newRecord)
 
-            viewModel.getRecords()
+            viewModel.getDbRecords()
 
             val records = viewModel.recordsFlow.firstOrNull()
 
