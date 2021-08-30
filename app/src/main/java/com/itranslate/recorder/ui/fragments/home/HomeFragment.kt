@@ -36,7 +36,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                startRecordingProcess()
+                startOrStopRecording()
             } else {
                 launchPermissionDialogRationale()
             }
@@ -60,11 +60,28 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private fun prepareClickListeners() {
         binding.btnHomeMic.onClick {
             requestPermissionAudioRecording {
-                startRecordingProcess()
+                startOrStopRecording()
             }
         }
 
         binding.btnHomeShowRecordings.onClick {
+            if (mediaRecorder != null) {
+                launchConfirmationDialog(
+                    getString(R.string.dialog_title_error_recording_in_process),
+                    getString(R.string.dialog_message_error_recording_in_process)
+                ) { dialogResult ->
+                    when (dialogResult) {
+                        DialogResult.Negative -> {
+                            stopRecording()
+                            isRecording = !isRecording
+                        }
+                        DialogResult.Positive -> {
+                            // do nothing
+                        }
+                    }
+                }
+                return@onClick
+            }
             findNavController().navigate(
                 HomeFragmentDirections.actionHomeFragmentToRecordingsFragment()
             )
@@ -109,16 +126,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     /**
      * function to start running recording process
      */
-    private fun startRecordingProcess() {
+    private fun startOrStopRecording() {
         when (isRecording) {
             true -> {
-                binding.btnHomeMic.setImageResource(R.drawable.ic_mic)
                 stopRecording()
             }
             false -> {
                 audioFile = createFile()
                 startRecording()
-                binding.btnHomeMic.setImageResource(R.drawable.ic_stop)
             }
         }
         isRecording = !isRecording
@@ -129,6 +144,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
      */
     private fun startRecording() {
         if (::audioFile.isInitialized) {
+            binding.btnHomeMic.setImageResource(R.drawable.ic_stop)
             mediaRecorder = MediaRecorder().apply {
                 setAudioSource(MediaRecorder.AudioSource.MIC)
                 setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
@@ -165,6 +181,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
      * function to stop stop the recording
      */
     private fun stopRecording() {
+        binding.btnHomeMic.setImageResource(R.drawable.ic_mic)
         mediaRecorder?.apply {
             stop()
             release()
