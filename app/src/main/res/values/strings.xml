@@ -11,6 +11,8 @@
 
     <string name="error_message_no_recording">You have no recordings yet!</string>
 
+    <string name="snackbar_message_record_added">Record %s added</string>
+
     <string name="dialog_title_error_permission_denied">Permission denied!</string>
     <string name="dialog_message_error_permission_denied">iRecorder needs your permission to record audio on your demand.\nNothing will be recorder without your permission.</string>
 </resources>

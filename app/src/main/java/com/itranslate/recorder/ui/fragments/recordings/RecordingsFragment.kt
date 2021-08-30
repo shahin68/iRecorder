@@ -1,6 +1,8 @@
 package com.itranslate.recorder.ui.fragments.recordings
 
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
@@ -11,6 +13,7 @@ import com.itranslate.recorder.general.extensions.addEnterExitSharedAxisTransiti
 import com.itranslate.recorder.general.extensions.visibleOrGone
 import com.itranslate.recorder.general.helpers.DividerItemDecoration
 import com.itranslate.recorder.general.helpers.SwipeToDeleteTouchHelper
+import com.itranslate.recorder.general.viewholders.ClickableViewHolder
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordingLoadStateAdapter
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordsAdapter
@@ -24,8 +27,16 @@ class RecordingsFragment :
     BaseFragment<FragmentRecordingsBinding>(FragmentRecordingsBinding::inflate) {
 
     private val viewModel: RecordingsViewModel by viewModel()
+    private var mediaPlayer: MediaPlayer? = null
     private val recordsAdapter = RecordsAdapter { view, position, clickType ->
-
+        when (val item = clickType) {
+            is ClickableViewHolder.ClickType.ToOpen -> {
+                item.data.recordPath?.let {
+                    Log.i(this@RecordingsFragment::class.simpleName, it)
+                    startPlaying(it)
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +65,7 @@ class RecordingsFragment :
 
             lifecycleScope.launch {
                 viewModel.deleteRecord(swipedRecord)
+                // Todo also remove the file from storage
             }
 
         }).attachToRecyclerView(binding.rvRecordingsList)
@@ -103,4 +115,25 @@ class RecordingsFragment :
         }
     }
 
+    private fun startPlaying(audioPath: String) {
+        mediaPlayer = MediaPlayer().apply {
+            try {
+                setDataSource(audioPath)
+                prepare()
+                setOnCompletionListener {
+                    if (isVisible) {
+                        stopPlaying()
+                    }
+                }
+                start()
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
+    private fun stopPlaying() {
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
 }

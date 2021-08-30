@@ -6,7 +6,6 @@ import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -15,10 +14,7 @@ import com.itranslate.recorder.R
 import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.databinding.FragmentHomeBinding
 import com.itranslate.recorder.general.Constants.GENERIC_FILE_NAME
-import com.itranslate.recorder.general.extensions.createFile
-import com.itranslate.recorder.general.extensions.launchAlertDialog
-import com.itranslate.recorder.general.extensions.launchSettingsIntent
-import com.itranslate.recorder.general.extensions.onClick
+import com.itranslate.recorder.general.extensions.*
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -90,7 +86,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                     recordDuration = audioDuration
                 )
             )
-            Toast.makeText(requireContext(), "Item added", Toast.LENGTH_SHORT).show()
+            showSnackBar(
+                message = getString(
+                    R.string.snackbar_message_record_added,
+                    audioFile.name
+                )
+            )
         }
     }
 
@@ -137,6 +138,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         mediaPlayer = MediaPlayer().apply {
             setDataSource(audioFile.path)
             prepare()
+            setOnCompletionListener {
+                if (isVisible) {
+                    stopPlaying()
+                }
+            }
             start()
         }
     }
@@ -149,12 +155,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     }
 
     private fun startRecording(audioFile: File) {
-
+        resetMediaRecorder()
         mediaRecorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             setOutputFile(audioFile.path)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
             prepare()
             start()
             runRecordTimerTask()
@@ -183,17 +189,21 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         insertRecordInDb(audioFile)
     }
 
-    override fun onPause() {
-        super.onPause()
-        resetAllRecordValues()
+    override fun onStop() {
+        super.onStop()
+        resetMediaRecorder()
+        resetMediaPlayer()
     }
 
-    private fun resetAllRecordValues() {
-        audioDuration = "00:00"
+    private fun resetMediaRecorder() {
         mediaRecorder?.release()
         mediaRecorder = null
         timerTask?.cancel()
         timerTask = null
+        audioDuration = "00:00"
+    }
+
+    private fun resetMediaPlayer() {
         mediaPlayer?.release()
         mediaPlayer = null
     }
