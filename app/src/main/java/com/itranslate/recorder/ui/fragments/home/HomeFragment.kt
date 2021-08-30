@@ -1,6 +1,7 @@
 package com.itranslate.recorder.ui.fragments.home
 
 import android.Manifest
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -131,6 +132,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                 prepare()
                 start()
                 runRecordTimerTask()
+                disableScreenRotation()
             }
         }
     }
@@ -166,6 +168,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         timerTask?.cancel()
         timerTask = null
         insertRecordInDb()
+        enableScreenRotation()
     }
 
     /**
@@ -206,5 +209,21 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     override fun onDestroy() {
         super.onDestroy()
         resetMediaRecorder()
+    }
+
+    /**
+     * Disable screen rotation
+     * To be used only when a recording is in proccess
+     */
+    private fun disableScreenRotation() {
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+    }
+
+    /**
+     * Enable screen rotation
+     * To be used after recording process is finished
+     */
+    private fun enableScreenRotation() {
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
     }
 }
