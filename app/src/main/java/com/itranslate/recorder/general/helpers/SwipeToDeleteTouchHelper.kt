@@ -1,7 +1,11 @@
 package com.itranslate.recorder.general.helpers
 
+import android.graphics.Canvas
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.itranslate.recorder.R
+
 
 /**
  * Class is a swipe to delete touch helper for recycler view
@@ -12,7 +16,7 @@ class SwipeToDeleteTouchHelper(
     dragDirections: Int,
     swipeDirections: Int,
     private val swipedCallback: (RecyclerView.ViewHolder) -> Unit
-): ItemTouchHelper.SimpleCallback(dragDirections, swipeDirections) {
+) : ItemTouchHelper.SimpleCallback(dragDirections, swipeDirections) {
 
     override fun onMove(
         recyclerView: RecyclerView,
@@ -25,4 +29,28 @@ class SwipeToDeleteTouchHelper(
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         swipedCallback.invoke(viewHolder)
     }
+
+    override fun onChildDraw(
+        c: Canvas,
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        dX: Float,
+        dY: Float,
+        actionState: Int,
+        isCurrentlyActive: Boolean
+    ) {
+        // setting background color to item view when it's moving
+        viewHolder.itemView.setBackgroundColor(
+            ContextCompat.getColor(
+                viewHolder.itemView.context,
+                if (dX == 0f) {
+                    R.color.transparent
+                } else {
+                    R.color.grey
+                }
+            )
+        )
+        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+    }
+
 }
