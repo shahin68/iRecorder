@@ -1,0 +1,65 @@
+package com.itranslate.recorder.data
+
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.itranslate.recorder.data.local.models.records.Record
+import com.itranslate.recorder.data.local.sources.LocalRepository
+import com.itranslate.recorder.data.remote.sources.RemoteRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+
+/**
+ * Class representing a single data source to all other parts of the project
+ *
+ * Provides access to [LocalRepository] & [RemoteRepository] indirectly to other classes
+ * including View Models
+ *
+ */
+class RepositoryImpl(
+    private val localRepository: LocalRepository,
+    private val remoteRepository: RemoteRepository,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+) : Repository {
+
+    override suspend fun insertRecord(record: Record) {
+        return localRepository.insertRecord(record)
+    }
+
+    override suspend fun deleteRecord(record: Record) {
+        return localRepository.deleteRecord(record)
+    }
+
+    override fun getRecords(): Flow<PagingData<Record>> {
+        val records = localRepository.getRecords()
+        return Pager(
+            PagingConfig(
+                pageSize = 25,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+                initialLoadSize = 100
+            )
+        ) {
+            records.asPagingSourceFactory(dispatcher).invoke()
+        }.flow
+    }
+
+    /**
+     * Initial load size is raised to 100 following documentation recommending to set a larger value
+     */
+    override fun getSortedRecords(): Flow<PagingData<Record>> {
+        val records = localRepository.getSortedRecords()
+        return Pager(
+            PagingConfig(
+                pageSize = 25,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+                initialLoadSize = 100
+            )
+        ) {
+            records.asPagingSourceFactory(dispatcher).invoke()
+        }.flow
+    }
+
+}

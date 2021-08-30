@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">iRecorder</string>
+
+    <string name="text_btn_home_show_recordings">Show Recordings</string>
+    <string name="text_btn_cancel">Cancel</string>
+    <string name="text_btn_save">Save</string>
+    <string name="text_btn_ok">OK</string>
+    <string name="text_btn_open_settings">Open settings</string>
+    <string name="text_btn_undo">Undo</string>
+
+    <string name="text_item_recording_name">%1$s %2$s</string>
+
+    <string name="error_message_no_recording">You have no recordings yet!</string>
+
+    <string name="snackbar_message_record_added">Record %s added</string>
+    <string name="snackbar_message_record_removed">Record %s removed!</string>
+
+    <string name="dialog_title_error_permission_denied">Permission denied!</string>
+    <string name="dialog_message_error_permission_denied">iRecorder needs your permission to record audio on your demand.\nNothing will be recorder without your permission.</string>
 </resources>
