@@ -146,4 +146,12 @@ class RecordingsFragment :
         mediaPlayer?.release()
         mediaPlayer = null
     }
+
+    /**
+     * invalidate [mediaPlayer] when fragment is destroyed and not visible anymore
+     */
+    override fun onDestroy() {
+        super.onDestroy()
+        stopPlaying()
+    }
 }
