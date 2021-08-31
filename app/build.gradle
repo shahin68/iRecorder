@@ -12,7 +12,7 @@ static def getDate() {
 
 def versionMajor = 0 // major milestones
 def versionMinor = 0 // minor patches & bug fixes
-def versionBuild = 2 // build number
+def versionBuild = 3 // build number
 android {
     compileSdk 30
 
