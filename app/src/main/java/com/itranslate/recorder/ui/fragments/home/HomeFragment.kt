@@ -241,6 +241,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
      * To be used after recording process is finished
      */
     private fun enableScreenRotation() {
-        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 }
