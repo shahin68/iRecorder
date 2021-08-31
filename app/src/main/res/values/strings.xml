@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">iRecorder</string>
 
+    <string name="actionbar_title_recordings">Recordings</string>
+
     <string name="text_btn_home_show_recordings">Show Recordings</string>
     <string name="text_btn_cancel">Cancel</string>
     <string name="text_btn_save">Save</string>
