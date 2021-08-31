@@ -17,6 +17,7 @@ import com.itranslate.recorder.databinding.FragmentHomeBinding
 import com.itranslate.recorder.general.Constants.GENERIC_FILE_NAME
 import com.itranslate.recorder.general.extensions.*
 import com.itranslate.recorder.ui.fragments.BaseFragment
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
@@ -27,6 +28,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
     private val viewModel: HomeViewModel by viewModel()
 
+    private val micBtnInactiveDuration = 1000L
+
     private lateinit var audioFile: File
     private var audioDuration = "00:00"
     private var isRecording = false
@@ -36,7 +39,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                startOrStopRecording()
+                startOrStopRecording {
+                    disableMicBtnForInactiveDuration()
+                }
             } else {
                 launchPermissionDialogRationale()
             }
@@ -60,7 +65,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private fun prepareClickListeners() {
         binding.btnHomeMic.onClick {
             requestPermissionAudioRecording {
-                startOrStopRecording()
+                startOrStopRecording {
+                    disableMicBtnForInactiveDuration()
+                }
             }
         }
 
@@ -85,6 +92,17 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             findNavController().navigate(
                 HomeFragmentDirections.actionHomeFragmentToRecordingsFragment()
             )
+        }
+    }
+
+    /**
+     * Disable mic button activation for an inactive duration of [micBtnInactiveDuration]
+     */
+    private fun disableMicBtnForInactiveDuration() {
+        binding.btnHomeMic.isEnabled = false
+        lifecycleScope.launch {
+            delay(micBtnInactiveDuration)
+            binding.btnHomeMic.isEnabled = true
         }
     }
 
@@ -126,7 +144,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     /**
      * function to start running recording process
      */
-    private fun startOrStopRecording() {
+    private fun startOrStopRecording(onStartRecording: () -> Unit) {
         when (isRecording) {
             true -> {
                 stopRecording()
@@ -134,6 +152,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             false -> {
                 audioFile = createFile()
                 startRecording()
+                onStartRecording.invoke()
             }
         }
         isRecording = !isRecording
@@ -243,4 +262,5 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private fun enableScreenRotation() {
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
+
 }
