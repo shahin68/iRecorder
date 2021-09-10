@@ -1,6 +1,12 @@
 package com.itranslate.recorder.general.extensions
 
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.Drawable
 import android.view.View
+import androidx.annotation.DrawableRes
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
 
@@ -61,6 +67,29 @@ fun LinearProgressIndicator.showOrHide(show: Boolean) = when {
     else -> {
         hide()
     }
+}
+
+/**
+ * Extension function to play animated vector drawable
+ * Providing callback events
+ */
+fun AppCompatImageView.startVectorAnimation(
+    @DrawableRes animatedVectorId: Int
+) {
+    setImageResource(animatedVectorId)
+    (drawable as Animatable).apply {
+        AnimatedVectorDrawableCompat.registerAnimationCallback(
+            drawable,
+            object : Animatable2Compat.AnimationCallback() {
+                override fun onAnimationStart(drawable: Drawable?) {
+                    isEnabled = false
+                }
+
+                override fun onAnimationEnd(drawable: Drawable?) {
+                    isEnabled = true
+                }
+            })
+    }.run { start() }
 }
 
 
