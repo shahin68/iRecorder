@@ -13,17 +13,15 @@ class BaseMediaPlayer(
     fun startPlaying(filePath: String) {
         setDataSource(filePath)
         prepare()
+        setOnCompletionListener {
+            onCompletionCallback.invoke()
+        }
         start()
     }
 
     fun stopPlaying() {
         stop()
         release()
-    }
-
-    override fun setOnCompletionListener(listener: OnCompletionListener?) {
-        super.setOnCompletionListener(listener)
-        onCompletionCallback.invoke()
     }
 
 }
