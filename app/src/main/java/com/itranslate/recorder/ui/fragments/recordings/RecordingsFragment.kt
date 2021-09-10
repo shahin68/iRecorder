@@ -242,10 +242,6 @@ class RecordingsFragment :
         mediaPlayer?.pause()
     }
 
-    private fun stopMediaPlayer() {
-        mediaPlayer?.stopPlaying()
-    }
-
     /**
      * function to stop playing audio record
      * Also start playing [R.drawable.avd_play_pause_reverse] animated vector
