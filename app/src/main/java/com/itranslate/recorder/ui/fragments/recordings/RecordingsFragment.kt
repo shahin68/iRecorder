@@ -8,13 +8,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itranslate.recorder.R
 import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.databinding.FragmentRecordingsBinding
-import com.itranslate.recorder.general.extensions.SnackBarCallBack
-import com.itranslate.recorder.general.extensions.addEnterExitSharedAxisTransition
-import com.itranslate.recorder.general.extensions.showSnackBar
-import com.itranslate.recorder.general.extensions.visibleOrGone
+import com.itranslate.recorder.general.extensions.*
 import com.itranslate.recorder.general.helpers.DividerItemDecoration
 import com.itranslate.recorder.general.helpers.SwipeToDeleteTouchHelper
 import com.itranslate.recorder.general.media.player.BaseMediaPlayer
@@ -33,16 +31,21 @@ class RecordingsFragment :
     BaseFragment<FragmentRecordingsBinding>(FragmentRecordingsBinding::inflate) {
 
     private val viewModel: RecordingsViewModel by viewModel()
+
     private val recordsAdapter = RecordsAdapter { _, position, clickType ->
         when (clickType) {
             is ClickableViewHolder.ClickType.ToOpen -> {
-                val path = clickType.data.recordPath
-                Log.d(this@RecordingsFragment::class.simpleName, path)
-                startMediaPlayer(path)
+                /**
+                 * Pass data to bottom sheet view
+                 */
+                openMediaPlayerBottomSheet(clickType.data)
             }
         }
     }
+
     private var mediaPlayer: BaseMediaPlayer? = null
+
+    private lateinit var mediaPlayerBottomSheet: BottomSheetBehavior<View>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +54,8 @@ class RecordingsFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupMediaPlayerBottomSheet()
 
         setupRecordingsList()
 
@@ -67,6 +72,42 @@ class RecordingsFragment :
     override fun onDestroy() {
         super.onDestroy()
         invalidateMediaPlayer()
+    }
+
+    /**
+     * Setup instance of [mediaPlayerBottomSheet]
+     */
+    private fun setupMediaPlayerBottomSheet() {
+        mediaPlayerBottomSheet = BottomSheetBehavior.from(binding.btsMediaPlayer.root)
+        mediaPlayerBottomSheet.registerCallback {
+            /**
+             * invalidate media player from playing if [mediaPlayerBottomSheet] is collapsed
+             */
+            invalidateMediaPlayer()
+        }
+    }
+
+    /**
+     * Open media player bottom sheet and setting click events and content values
+     *
+     * expand [mediaPlayerBottomSheet]
+     *
+     * bind [record] item with bottom sheet view
+     *
+     * setup click event on [binding.btsMediaPlayer.btnPlay]
+     */
+    private fun openMediaPlayerBottomSheet(record: Record) {
+        val path = record.recordPath
+        Log.d(this@RecordingsFragment::class.simpleName, path)
+        if (::mediaPlayerBottomSheet.isInitialized) {
+            mediaPlayerBottomSheet.expand()
+
+            binding.btsMediaPlayer.record = record
+
+            binding.btsMediaPlayer.btnPlay.onClick {
+                startMediaPlayer(path)
+            }
+        }
     }
 
     private fun setupRecordingsList() {
@@ -159,18 +200,42 @@ class RecordingsFragment :
 
     /**
      * function to start playing audio record
+     * Invalidate [mediaPlayer] when completion callback is invoked
+     * Also start playing [R.drawable.avd_play_pause] animated vector when media player starts
      */
     private fun startMediaPlayer(audioPath: String) {
-        if (mediaPlayer != null) {
-            stopMediaPlayer()
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                pauseMediaPlayer()
+            } else {
+                continueMediaPlayer()
+            }
+            return
         }
         mediaPlayer = BaseMediaPlayer {
-            if (isVisible) {
-                invalidateMediaPlayer()
-            }
+            invalidateMediaPlayer()
         }.apply {
+            binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause)
             startPlaying(audioPath)
         }
+    }
+
+    /**
+     * function to continue playing audio record
+     * Also start playing [R.drawable.avd_play_pause] animated vector
+     */
+    private fun continueMediaPlayer() {
+        binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause)
+        mediaPlayer?.start()
+    }
+
+    /**
+     * function to pause audio record
+     * Also start playing [R.drawable.avd_play_pause_reverse] animated vector
+     */
+    private fun pauseMediaPlayer() {
+        binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause_reverse)
+        mediaPlayer?.pause()
     }
 
     private fun stopMediaPlayer() {
@@ -179,8 +244,10 @@ class RecordingsFragment :
 
     /**
      * function to stop playing audio record
+     * Also start playing [R.drawable.avd_play_pause_reverse] animated vector
      */
     private fun invalidateMediaPlayer() {
+        binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause_reverse)
         mediaPlayer?.stopPlaying()
         mediaPlayer = null
     }
