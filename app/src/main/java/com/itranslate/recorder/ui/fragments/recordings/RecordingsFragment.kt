@@ -4,7 +4,9 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.addCallback
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.itranslate.recorder.R
@@ -54,6 +56,9 @@ class RecordingsFragment :
 
         observeRecordings()
 
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, true) {
+            findNavController().popBackStack()
+        }
     }
 
     /**
