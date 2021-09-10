@@ -130,7 +130,7 @@ class RecordingsFragment :
         showSnackBar(
             getString(
                 R.string.snackbar_message_record_removed,
-                record.recordName
+                "${record.recordName} ${record.recordId}"
             ), getString(R.string.text_btn_undo)
         ) {
             when (it) {
