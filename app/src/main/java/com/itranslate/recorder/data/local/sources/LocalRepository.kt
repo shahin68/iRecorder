@@ -1,7 +1,9 @@
 package com.itranslate.recorder.data.local.sources
 
 import androidx.paging.DataSource
+import androidx.paging.PagingData
 import com.itranslate.recorder.data.local.models.records.Record
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Local data source access point
@@ -23,13 +25,13 @@ interface LocalRepository {
      * Used paging 3 [DataSource.Factory] as return type to implement paginated flow of [Record]s
      * @return Not sorted paged list of [Record]s
      */
-    fun getRecords(): DataSource.Factory<Int, Record>
+    fun getRecords(): Flow<PagingData<Record>>
 
     /**
      * Used paging 3 [DataSource.Factory] as return type to implement paginated flow of [Record]s
      * @return Sorted paged list of [Record]s
      */
-    fun getSortedRecords(): DataSource.Factory<Int, Record>
+    fun getSortedRecords(): Flow<PagingData<Record>>
 
 
 }
