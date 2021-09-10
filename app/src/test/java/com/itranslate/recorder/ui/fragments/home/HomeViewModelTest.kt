@@ -2,7 +2,7 @@ package com.itranslate.recorder.ui.fragments.home
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.common.truth.Truth
-import com.itranslate.recorder.data.FakeRepositoryImpl
+import com.itranslate.recorder.data.FakeLocalRepositoryImpl
 import com.itranslate.recorder.data.local.models.records.Record
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +29,7 @@ class HomeViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        viewModel = HomeViewModel(FakeRepositoryImpl())
+        viewModel = HomeViewModel(FakeLocalRepositoryImpl())
     }
 
     @After

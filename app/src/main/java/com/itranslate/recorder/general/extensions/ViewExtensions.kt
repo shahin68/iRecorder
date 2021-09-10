@@ -1,35 +1,35 @@
 package com.itranslate.recorder.general.extensions
 
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.Drawable
+import android.os.Build
 import android.view.View
-import androidx.core.view.isVisible
+import android.widget.ProgressBar
+import androidx.annotation.DrawableRes
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
 
 /**
  * extension function to set view visibility as VISIBLE
  */
-fun <T: View> T.visible() {
+fun <T : View> T.visible() {
     visibility = View.VISIBLE
 }
 
 /**
  * extension function to set view visibility as GONE
  */
-fun <T: View> T.gone() {
+fun <T : View> T.gone() {
     visibility = View.GONE
-}
-
-/**
- * extension function to set view visibility as INVISIBLE
- */
-fun <T: View> T.hide() {
-    visibility = View.INVISIBLE
 }
 
 /**
  * extension function to set view visibility as VISIBLE or GONE
  */
-fun <T: View> T.visibleOrGone(visible: Boolean) {
+fun <T : View> T.visibleOrGone(visible: Boolean) {
     if (visible) {
         visible()
     } else {
@@ -38,31 +38,9 @@ fun <T: View> T.visibleOrGone(visible: Boolean) {
 }
 
 /**
- * extension function to toggle view visibility
- */
-fun <T: View> T.toggleVisibleOrGone() {
-    if (isVisible) {
-        gone()
-    } else {
-        visible()
-    }
-}
-
-/**
- * extension function to set view visibility as VISIBLE or INVISIBLE
- */
-fun <T: View> T.visibleOrHide(show: Boolean) {
-    if (show) {
-        visible()
-    } else {
-        hide()
-    }
-}
-
-/**
  * extension function to register click listener on a view
  */
-fun <T: View> T.onClick(block: (View) -> Unit) {
+fun <T : View> T.onClick(block: (View) -> Unit) {
     return setOnClickListener {
         block.invoke(this)
     }
@@ -94,4 +72,36 @@ fun LinearProgressIndicator.showOrHide(show: Boolean) = when {
     }
 }
 
+/**
+ * Extension function to play animated vector drawable
+ * Providing callback events
+ */
+fun AppCompatImageView.startVectorAnimation(
+    @DrawableRes animatedVectorId: Int
+) {
+    setImageResource(animatedVectorId)
+    (drawable as Animatable).apply {
+        AnimatedVectorDrawableCompat.registerAnimationCallback(
+            drawable,
+            object : Animatable2Compat.AnimationCallback() {
+                override fun onAnimationStart(drawable: Drawable?) {
+                    isEnabled = false
+                }
+
+                override fun onAnimationEnd(drawable: Drawable?) {
+                    isEnabled = true
+                }
+            })
+    }.run { start() }
+}
+
+/**
+ * Extension function to set progress value of progressbar
+ * Where on Api level higher than 24 animation is supported which helps to observe smooth progress change
+ */
+fun ProgressBar.setProgressValue(currentProgress: Int) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+    setProgress(currentProgress, true)
+} else {
+    progress = currentProgress
+}
 

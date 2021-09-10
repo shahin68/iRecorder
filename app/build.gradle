@@ -12,7 +12,7 @@ static def getDate() {
 
 def versionMajor = 0 // major milestones
 def versionMinor = 0 // minor patches & bug fixes
-def versionBuild = 4 // build number
+def versionBuild = 5 // build number
 android {
     compileSdk 30
 
@@ -125,7 +125,7 @@ dependencies {
     androidTestImplementation('androidx.test.ext:junit:1.1.3')
     androidTestImplementation('androidx.test:runner:1.3.0')
     androidTestImplementation('androidx.test:rules:1.3.0') // test tules
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.5.0-alpha01') // espresso
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.3.0') // espresso
     androidTestImplementation("com.google.truth:truth:$TRUTH") // truth
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$COROUTINES") // coroutines test tools
     androidTestImplementation('androidx.arch.core:core-testing:2.1.0') // architectural test tools

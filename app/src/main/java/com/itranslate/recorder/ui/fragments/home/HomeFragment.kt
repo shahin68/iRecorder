@@ -3,7 +3,6 @@ package com.itranslate.recorder.ui.fragments.home
 import android.Manifest
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.media.MediaRecorder
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -16,6 +15,8 @@ import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.databinding.FragmentHomeBinding
 import com.itranslate.recorder.general.Constants.GENERIC_FILE_NAME
 import com.itranslate.recorder.general.extensions.*
+import com.itranslate.recorder.general.media.recorder.BaseMediaRecorder
+import com.itranslate.recorder.general.media.recorder.RecorderEvent
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,7 +34,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private lateinit var audioFile: File
     private var audioDuration = "00:00"
     private var isRecording = false
-    private var mediaRecorder: MediaRecorder? = null
+    private var mediaRecorder: BaseMediaRecorder? = null
     private var timerTask: Timer? = null
 
     private val requestPermissionLauncher =
@@ -163,16 +164,23 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
      */
     private fun startRecording() {
         if (::audioFile.isInitialized) {
-            binding.btnHomeMic.setImageResource(R.drawable.ic_stop)
-            mediaRecorder = MediaRecorder().apply {
-                setAudioSource(MediaRecorder.AudioSource.MIC)
-                setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
-                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setOutputFile(audioFile.path)
-                prepare()
-                start()
-                runRecordTimerTask()
-                disableScreenRotation()
+            mediaRecorder = BaseMediaRecorder { recorderEvent ->
+                when (recorderEvent) {
+                    RecorderEvent.Start -> {
+                        binding.btnHomeMic.setImageResource(R.drawable.ic_stop)
+                        runRecordTimerTask()
+                        disableScreenRotation()
+                    }
+                    RecorderEvent.End -> {
+                        binding.btnHomeMic.setImageResource(R.drawable.ic_mic)
+                        timerTask?.cancel()
+                        timerTask = null
+                        insertRecordInDb()
+                        enableScreenRotation()
+                    }
+                }
+            }.apply {
+                startRecording(audioFile.path)
             }
         }
     }
@@ -200,16 +208,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
      * function to stop stop the recording
      */
     private fun stopRecording() {
-        binding.btnHomeMic.setImageResource(R.drawable.ic_mic)
-        mediaRecorder?.apply {
-            stop()
-            release()
-        }
+        mediaRecorder?.stopRecording()
         mediaRecorder = null
-        timerTask?.cancel()
-        timerTask = null
-        insertRecordInDb()
-        enableScreenRotation()
     }
 
     /**
@@ -240,8 +240,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
      * stop and reset [mediaRecorder] & [timerTask] & [audioDuration]
      */
     private fun resetMediaRecorder() {
-        mediaRecorder?.release()
-        mediaRecorder = null
+        stopRecording()
         timerTask?.cancel()
         timerTask = null
         audioDuration = "00:00"

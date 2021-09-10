@@ -5,7 +5,7 @@ import androidx.paging.AsyncPagingDataDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListUpdateCallback
 import com.google.common.truth.Truth
-import com.itranslate.recorder.data.FakeRepositoryImpl
+import com.itranslate.recorder.data.FakeLocalRepositoryImpl
 import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.general.ConstantsTest.RECORD_0
 import com.itranslate.recorder.general.ConstantsTest.RECORD_4
@@ -34,7 +34,7 @@ class RecordingsViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        viewModel = RecordingsViewModel(FakeRepositoryImpl())
+        viewModel = RecordingsViewModel(FakeLocalRepositoryImpl())
     }
 
     @After

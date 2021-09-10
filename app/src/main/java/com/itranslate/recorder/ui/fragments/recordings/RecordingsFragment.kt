@@ -1,28 +1,27 @@
 package com.itranslate.recorder.ui.fragments.recordings
 
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.addCallback
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.ItemTouchHelper
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itranslate.recorder.R
 import com.itranslate.recorder.data.local.models.records.Record
 import com.itranslate.recorder.databinding.FragmentRecordingsBinding
-import com.itranslate.recorder.general.extensions.SnackBarCallBack
-import com.itranslate.recorder.general.extensions.addEnterExitSharedAxisTransition
-import com.itranslate.recorder.general.extensions.showSnackBar
-import com.itranslate.recorder.general.extensions.visibleOrGone
+import com.itranslate.recorder.general.extensions.*
 import com.itranslate.recorder.general.helpers.DividerItemDecoration
 import com.itranslate.recorder.general.helpers.SwipeToDeleteTouchHelper
+import com.itranslate.recorder.general.media.player.BaseMediaPlayer
 import com.itranslate.recorder.general.viewholders.ClickableViewHolder
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordingLoadStateAdapter
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordsAdapter
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
 
@@ -31,16 +30,22 @@ class RecordingsFragment :
     BaseFragment<FragmentRecordingsBinding>(FragmentRecordingsBinding::inflate) {
 
     private val viewModel: RecordingsViewModel by viewModel()
+
     private val recordsAdapter = RecordsAdapter { _, position, clickType ->
         when (clickType) {
             is ClickableViewHolder.ClickType.ToOpen -> {
-                val path = clickType.data.recordPath
-                Log.d(this@RecordingsFragment::class.simpleName, path)
-                startMediaPlayer(path)
+                /**
+                 * Pass data to bottom sheet view
+                 */
+                openMediaPlayerBottomSheet(clickType.data)
             }
         }
     }
-    private var mediaPlayer: MediaPlayer? = null
+
+    private var mediaPlayer: BaseMediaPlayer? = null
+    private var mediaPlayerProgressJob: Job? = null
+
+    private lateinit var mediaPlayerBottomSheet: BottomSheetBehavior<View>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,10 +55,19 @@ class RecordingsFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupMediaPlayerBottomSheet()
+
         setupRecordingsList()
 
         observeRecordings()
 
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, true) {
+            if (mediaPlayerBottomSheet.isExpanded()) {
+                mediaPlayerBottomSheet.collapse()
+            } else {
+                findNavController().popBackStack()
+            }
+        }
     }
 
     /**
@@ -62,6 +76,42 @@ class RecordingsFragment :
     override fun onDestroy() {
         super.onDestroy()
         invalidateMediaPlayer()
+    }
+
+    /**
+     * Setup instance of [mediaPlayerBottomSheet]
+     */
+    private fun setupMediaPlayerBottomSheet() {
+        mediaPlayerBottomSheet = BottomSheetBehavior.from(binding.btsMediaPlayer.root)
+        mediaPlayerBottomSheet.registerCallback {
+            /**
+             * invalidate media player from playing if [mediaPlayerBottomSheet] is collapsed
+             */
+            invalidateMediaPlayer()
+        }
+    }
+
+    /**
+     * Open media player bottom sheet and setting click events and content values
+     * expand [mediaPlayerBottomSheet]
+     * bind [record] item with bottom sheet view
+     * reset progress bar value
+     * setup click event on [binding.btsMediaPlayer.btnPlay]
+     */
+    private fun openMediaPlayerBottomSheet(record: Record) {
+        val path = record.recordPath
+        Log.d(this@RecordingsFragment::class.simpleName, path)
+        if (::mediaPlayerBottomSheet.isInitialized) {
+            mediaPlayerBottomSheet.expand()
+
+            binding.btsMediaPlayer.record = record
+
+            binding.btsMediaPlayer.progressbar.progress = 0
+
+            binding.btsMediaPlayer.btnPlay.onClick {
+                startMediaPlayer(path)
+            }
+        }
     }
 
     private fun setupRecordingsList() {
@@ -125,7 +175,7 @@ class RecordingsFragment :
         showSnackBar(
             getString(
                 R.string.snackbar_message_record_removed,
-                record.recordName
+                "${record.recordName} ${record.recordId}"
             ), getString(R.string.text_btn_undo)
         ) {
             when (it) {
@@ -154,38 +204,92 @@ class RecordingsFragment :
 
     /**
      * function to start playing audio record
+     * Invalidate [mediaPlayer] when completion callback is invoked
+     * Also start playing [R.drawable.avd_play_pause] animated vector when media player starts
+     * And start running [mediaPlayerProgressJob] job
      */
     private fun startMediaPlayer(audioPath: String) {
-        if (mediaPlayer != null) {
-            stopMediaPlayer()
-        }
-        mediaPlayer = MediaPlayer().apply {
-            try {
-                setDataSource(audioPath)
-                prepare()
-                setOnCompletionListener {
-                    if (isVisible) {
-                        invalidateMediaPlayer()
-                    }
-                }
-                start()
-            } catch (e: Exception) {
-
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                pauseMediaPlayer()
+            } else {
+                continueMediaPlayer()
             }
+            return
+        }
+        mediaPlayer = BaseMediaPlayer {
+            invalidateMediaPlayer()
+        }.apply {
+            binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause)
+            startPlaying(audioPath)
+            startMediaPlayerProgressJob()
         }
     }
 
-    private fun stopMediaPlayer() {
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
+    /**
+     * function to continue playing audio record
+     * Also start playing [R.drawable.avd_play_pause] animated vector
+     * And start running [mediaPlayerProgressJob] job
+     */
+    private fun continueMediaPlayer() {
+        binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause)
+        mediaPlayer?.start()
+        startMediaPlayerProgressJob()
+    }
+
+    /**
+     * function to pause audio record
+     * Also start playing [R.drawable.avd_play_pause_reverse] animated vector
+     * And invalidate [mediaPlayerProgressJob] job
+     */
+    private fun pauseMediaPlayer() {
+        binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause_reverse)
+        mediaPlayer?.pause()
+        stopInvalidateMediaPlayerProgressJob()
     }
 
     /**
      * function to stop playing audio record
+     * Also start playing [R.drawable.avd_play_pause_reverse] animated vector
+     * And invalidate [mediaPlayerProgressJob] job
      */
     private fun invalidateMediaPlayer() {
-        mediaPlayer?.release()
+        binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause_reverse)
+        mediaPlayer?.stopPlaying()
         mediaPlayer = null
+        stopInvalidateMediaPlayerProgressJob()
     }
 
+    /**
+     * Start [mediaPlayerProgressJob] by running a lifecycle aware cancellable coroutine job
+     * Each time by starting [mediaPlayerProgressJob] the latest position is fetched from [mediaPlayer]
+     * [mediaPlayerProgressJob] job is a background thread job, therefore invalidation is necessary
+     * Also after each trigger, job briefly calls main thread to update progressbar ui with respect to
+     * fragments accessibility [isAdded] & [sVisible] & availability of [mediaPlayer]
+     */
+    private fun startMediaPlayerProgressJob() {
+        mediaPlayerProgressJob = lifecycleScope.launch {
+            while (isActive) {
+                delay(50)
+                withContext(Dispatchers.Main) {
+                    if (isAdded && isVisible) {
+                        mediaPlayer?.let { player ->
+                            val position = player.currentPosition * 100 / player.duration
+                            binding.btsMediaPlayer.progressbar.setProgressValue(position)
+                        }
+                    }
+                }
+            }
+        }.apply {
+            start()
+        }
+    }
+
+    /**
+     * Stop [mediaPlayerProgressJob] and invalidate instance
+     */
+    private fun stopInvalidateMediaPlayerProgressJob() {
+        mediaPlayerProgressJob?.cancel()
+        mediaPlayerProgressJob = null
+    }
 }

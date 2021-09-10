@@ -4,25 +4,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.itranslate.recorder.data.Repository
 import com.itranslate.recorder.data.local.models.records.Record
+import com.itranslate.recorder.data.local.sources.LocalRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class RecordingsViewModel(
-    private val repository: Repository
+    private val localRepository: LocalRepository
 ) : ViewModel() {
 
     suspend fun insertRecordInDb(record: Record) {
-        return repository.insertRecord(record)
+        return localRepository.insertRecord(record)
     }
 
     suspend fun deleteRecord(record: Record) {
-        return repository.deleteRecord(record)
+        return localRepository.deleteRecord(record)
     }
 
     fun getSortedRecordings(): Flow<PagingData<Record>> {
-        return repository.getSortedRecords().distinctUntilChanged().cachedIn(viewModelScope)
+        return localRepository.getSortedRecords().distinctUntilChanged().cachedIn(viewModelScope)
     }
 
 }
