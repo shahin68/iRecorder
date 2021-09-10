@@ -62,7 +62,11 @@ class RecordingsFragment :
         observeRecordings()
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, true) {
-            findNavController().popBackStack()
+            if (mediaPlayerBottomSheet.isExpanded()) {
+                mediaPlayerBottomSheet.collapse()
+            } else {
+                findNavController().popBackStack()
+            }
         }
     }
 
