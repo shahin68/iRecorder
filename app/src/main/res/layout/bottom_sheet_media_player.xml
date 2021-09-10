@@ -53,6 +53,7 @@
                 android:id="@+id/btn_play"
                 android:layout_width="@dimen/icon_size_large"
                 android:layout_height="@dimen/icon_size_large"
+                android:layout_marginTop="@dimen/spacing_small"
                 android:background="@drawable/ripple_oval_bottom_sheet_play_btn"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/avd_play_pause" />
