@@ -1,6 +1,5 @@
 package com.itranslate.recorder.ui.fragments.recordings
 
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -18,6 +17,7 @@ import com.itranslate.recorder.general.extensions.showSnackBar
 import com.itranslate.recorder.general.extensions.visibleOrGone
 import com.itranslate.recorder.general.helpers.DividerItemDecoration
 import com.itranslate.recorder.general.helpers.SwipeToDeleteTouchHelper
+import com.itranslate.recorder.general.media.player.BaseMediaPlayer
 import com.itranslate.recorder.general.viewholders.ClickableViewHolder
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordingLoadStateAdapter
@@ -42,7 +42,7 @@ class RecordingsFragment :
             }
         }
     }
-    private var mediaPlayer: MediaPlayer? = null
+    private var mediaPlayer: BaseMediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -164,32 +164,24 @@ class RecordingsFragment :
         if (mediaPlayer != null) {
             stopMediaPlayer()
         }
-        mediaPlayer = MediaPlayer().apply {
-            try {
-                setDataSource(audioPath)
-                prepare()
-                setOnCompletionListener {
-                    if (isVisible) {
-                        invalidateMediaPlayer()
-                    }
-                }
-                start()
-            } catch (e: Exception) {
-
+        mediaPlayer = BaseMediaPlayer {
+            if (isVisible) {
+                invalidateMediaPlayer()
             }
+        }.apply {
+            startPlaying(audioPath)
         }
     }
 
     private fun stopMediaPlayer() {
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
+        mediaPlayer?.stopPlaying()
     }
 
     /**
      * function to stop playing audio record
      */
     private fun invalidateMediaPlayer() {
-        mediaPlayer?.release()
+        mediaPlayer?.stopPlaying()
         mediaPlayer = null
     }
 
