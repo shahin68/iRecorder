@@ -275,7 +275,7 @@ class RecordingsFragment :
                     if (isAdded && isVisible) {
                         mediaPlayer?.let { player ->
                             val position = player.currentPosition * 100 / player.duration
-                            binding.btsMediaPlayer.progressbar.progress = position
+                            binding.btsMediaPlayer.progressbar.setProgressValue(position)
                         }
                     }
                 }
