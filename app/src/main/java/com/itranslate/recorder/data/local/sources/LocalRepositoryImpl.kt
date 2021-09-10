@@ -19,41 +19,16 @@ class LocalRepositoryImpl(
         return recordsDao.insertRecord(record)
     }
 
-    override suspend fun insertRecord(records: List<Record>) {
-        return recordsDao.insertRecord(records)
-    }
-
-    override suspend fun updateRecord(record: Record) {
-        return recordsDao.updateRecord(record)
-    }
-
     override suspend fun deleteRecord(record: Record) {
         return recordsDao.deleteRecord(record)
-    }
-
-    override suspend fun deleteRecordsByRecordId(recordId: Int) {
-        return recordsDao.deleteRecordsByRecordId(recordId)
-    }
-
-    override suspend fun clearAllRecords() {
-        return recordsDao.clearAllRecords()
     }
 
     override fun getRecords(): DataSource.Factory<Int, Record> {
         return recordsDao.getRecords()
     }
 
-    override fun findRecordsByQuery(query: String): DataSource.Factory<Int, Record> {
-        return recordsDao.findRecordsByQuery(query)
-    }
-
     override fun getSortedRecords(): DataSource.Factory<Int, Record> {
         return recordsDao.getSortedRecords()
     }
-
-    override fun findSortedRecordsByQuery(query: String): DataSource.Factory<Int, Record> {
-        return recordsDao.findSortedRecordsByQuery(query)
-    }
-
 
 }
