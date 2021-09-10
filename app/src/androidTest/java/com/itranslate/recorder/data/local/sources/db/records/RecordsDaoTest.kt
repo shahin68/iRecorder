@@ -44,7 +44,12 @@ class RecordsDaoTest {
     @Test
     fun insertRecordItem_shouldPass() {
         runBlockingTest {
-            val recordItem = Record(recordName = "Recording 0")
+            val recordItem = Record(
+                recordId = 1,
+                recordName = "Recording 0",
+                recordPath = "path",
+                recordDuration = "00:00"
+            )
             recordsDao.insertRecord(recordItem)
 
             val recordsTable = recordsDao.getRecordsList()
@@ -67,7 +72,12 @@ class RecordsDaoTest {
     @Test
     fun removeRecordItem_shouldPass() {
         runBlockingTest {
-            val recordItem = Record(recordId = 100, recordName = "Recording 0")
+            val recordItem = Record(
+                recordId = 1,
+                recordName = "Recording 0",
+                recordPath = "path",
+                recordDuration = "00:00"
+            )
             recordsDao.insertRecord(recordItem)
             recordsDao.deleteRecord(recordItem)
 
@@ -86,8 +96,18 @@ class RecordsDaoTest {
     @Test
     fun findRecordItem_shouldPass() {
         runBlockingTest {
-            val recordItem1 = Record(recordId = 1, recordName = "Recording 0")
-            val recordItem2 = Record(recordId = 2, recordName = "Recording 0")
+            val recordItem1 = Record(
+                recordId = 1,
+                recordName = "Recording 0",
+                recordPath = "path",
+                recordDuration = "00:00"
+            )
+            val recordItem2 = Record(
+                recordId = 2,
+                recordName = "Recording 0",
+                recordPath = "path",
+                recordDuration = "00:00"
+            )
             recordsDao.insertRecord(recordItem1)
             recordsDao.insertRecord(recordItem2)
 
