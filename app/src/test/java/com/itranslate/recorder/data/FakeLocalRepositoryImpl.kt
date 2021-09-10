@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 
-class FakeRepositoryImpl : LocalRepository {
+class FakeLocalRepositoryImpl : LocalRepository {
 
     private val _recordsFlow: MutableStateFlow<PagingData<Record>> =
         MutableStateFlow(PagingData.empty())
