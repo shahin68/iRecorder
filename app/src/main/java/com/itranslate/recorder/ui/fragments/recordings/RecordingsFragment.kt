@@ -20,9 +20,8 @@ import com.itranslate.recorder.general.viewholders.ClickableViewHolder
 import com.itranslate.recorder.ui.fragments.BaseFragment
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordingLoadStateAdapter
 import com.itranslate.recorder.ui.fragments.recordings.adapters.RecordsAdapter
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
 
@@ -44,6 +43,7 @@ class RecordingsFragment :
     }
 
     private var mediaPlayer: BaseMediaPlayer? = null
+    private var mediaPlayerProgressJob: Job? = null
 
     private lateinit var mediaPlayerBottomSheet: BottomSheetBehavior<View>
 
@@ -93,11 +93,9 @@ class RecordingsFragment :
 
     /**
      * Open media player bottom sheet and setting click events and content values
-     *
      * expand [mediaPlayerBottomSheet]
-     *
      * bind [record] item with bottom sheet view
-     *
+     * reset progress bar value
      * setup click event on [binding.btsMediaPlayer.btnPlay]
      */
     private fun openMediaPlayerBottomSheet(record: Record) {
@@ -107,6 +105,8 @@ class RecordingsFragment :
             mediaPlayerBottomSheet.expand()
 
             binding.btsMediaPlayer.record = record
+
+            binding.btsMediaPlayer.progressbar.progress = 0
 
             binding.btsMediaPlayer.btnPlay.onClick {
                 startMediaPlayer(path)
@@ -206,6 +206,7 @@ class RecordingsFragment :
      * function to start playing audio record
      * Invalidate [mediaPlayer] when completion callback is invoked
      * Also start playing [R.drawable.avd_play_pause] animated vector when media player starts
+     * And start running [mediaPlayerProgressJob] job
      */
     private fun startMediaPlayer(audioPath: String) {
         mediaPlayer?.let {
@@ -221,35 +222,74 @@ class RecordingsFragment :
         }.apply {
             binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause)
             startPlaying(audioPath)
+            startMediaPlayerProgressJob()
         }
     }
 
     /**
      * function to continue playing audio record
      * Also start playing [R.drawable.avd_play_pause] animated vector
+     * And start running [mediaPlayerProgressJob] job
      */
     private fun continueMediaPlayer() {
         binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause)
         mediaPlayer?.start()
+        startMediaPlayerProgressJob()
     }
 
     /**
      * function to pause audio record
      * Also start playing [R.drawable.avd_play_pause_reverse] animated vector
+     * And invalidate [mediaPlayerProgressJob] job
      */
     private fun pauseMediaPlayer() {
         binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause_reverse)
         mediaPlayer?.pause()
+        stopInvalidateMediaPlayerProgressJob()
     }
 
     /**
      * function to stop playing audio record
      * Also start playing [R.drawable.avd_play_pause_reverse] animated vector
+     * And invalidate [mediaPlayerProgressJob] job
      */
     private fun invalidateMediaPlayer() {
         binding.btsMediaPlayer.btnPlay.startVectorAnimation(R.drawable.avd_play_pause_reverse)
         mediaPlayer?.stopPlaying()
         mediaPlayer = null
+        stopInvalidateMediaPlayerProgressJob()
     }
 
+    /**
+     * Start [mediaPlayerProgressJob] by running a lifecycle aware cancellable coroutine job
+     * Each time by starting [mediaPlayerProgressJob] the latest position is fetched from [mediaPlayer]
+     * [mediaPlayerProgressJob] job is a background thread job, therefore invalidation is necessary
+     * Also after each trigger, job briefly calls main thread to update progressbar ui with respect to
+     * fragments accessibility [isAdded] & [sVisible] & availability of [mediaPlayer]
+     */
+    private fun startMediaPlayerProgressJob() {
+        mediaPlayerProgressJob = lifecycleScope.launch {
+            while (isActive) {
+                delay(50)
+                withContext(Dispatchers.Main) {
+                    if (isAdded && isVisible) {
+                        mediaPlayer?.let { player ->
+                            val position = player.currentPosition * 100 / player.duration
+                            binding.btsMediaPlayer.progressbar.progress = position
+                        }
+                    }
+                }
+            }
+        }.apply {
+            start()
+        }
+    }
+
+    /**
+     * Stop [mediaPlayerProgressJob] and invalidate instance
+     */
+    private fun stopInvalidateMediaPlayerProgressJob() {
+        mediaPlayerProgressJob?.cancel()
+        mediaPlayerProgressJob = null
+    }
 }

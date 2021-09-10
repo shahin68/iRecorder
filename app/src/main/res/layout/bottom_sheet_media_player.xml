@@ -45,8 +45,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:indeterminate="false"
-                android:max="0"
-                android:progress="0" />
+                android:max="100"
+                android:progress="0"
+                android:progressTint="@color/white" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/btn_play"
