@@ -15,6 +15,12 @@ fun <T : BottomSheetBehavior<View>> T.expand() {
     state = BottomSheetBehavior.STATE_EXPANDED
 }
 
+/**
+ * Extension function to expand
+ */
+fun <T : BottomSheetBehavior<View>> T.collapse() {
+    state = BottomSheetBehavior.STATE_COLLAPSED
+}
 
 /**
  * Extension function to register bottom sheet callback
